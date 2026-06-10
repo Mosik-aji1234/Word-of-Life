@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word of Life - Counseling</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/fadca056b5.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand">
+        <img src="images/logo.png.png" alt="Word of Life logo" class="brand-logo">
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="books.html">Books</a>
+        <a href="sermons.html">Sermons</a>
+        <a href="bible.html">Bible</a>
+        <a href="counseling.html">Counseling</a>
+        <a href="tracts.html">Tracts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <article class="hero-card">
+        <h1>Faith counseling and support</h1>
+        <p>Reach out for prayer, personal guidance, or spiritual counseling through email, phone, or social media.</p>
+      </article>
+    </section>
+
+    <section class="books-overview">
+      <div class="section-head">
+        <h2>Contact the counseling team</h2>
+        <p>Use the options below to connect with us on the platform that works best for you.</p>
+      </div>
+
+      <div class="books-grid">
+        <article class="book-card">
+          <div class="book-card-header">
+            <div class="book-icon"><i class="fa-solid fa-envelope"></i></div>
+            <div>
+              <h3>Email</h3>
+              <p>Send your prayer requests, questions, or personal support needs.</p>
+            </div>
+          </div>
+          <a class="contact-link" href="mailto:mosik.aji15@gmail.com">mosik.aji15@gmail.com</a>
+        </article>
+
+        <article class="book-card">
+          <div class="book-card-header">
+            <div class="book-icon"><i class="fa-solid fa-phone"></i></div>
+            <div>
+              <h3>Phone</h3>
+              <p>Call or text for direct spiritual encouragement and counselling support.</p>
+            </div>
+          </div>
+          <a class="contact-link" href="tel:+2348154967104">+234 815 496 7104</a>
+        </article>
+
+        <article class="book-card">
+          <div class="book-card-header">
+            <div class="book-icon"><i class="fa-brands fa-facebook"></i></div>
+            <div>
+              <h3>Facebook</h3>
+              <p>Connect through the ministry page for updates and encouragement.</p>
+            </div>
+          </div>
+          <a class="contact-link" href="https://web.facebook.com/moses.flamin" target="_blank" rel="noreferrer">facebook.com/moses.flamin</a>
+        </article>
+
+        <article class="book-card">
+          <div class="book-card-header">
+            <div class="book-icon"><i class="fa-brands fa-instagram"></i></div>
+            <div>
+              <h3>Instagram</h3>
+              <p>Follow for daily inspiration and personal ministry moments.</p>
+            </div>
+          </div>
+          <a class="contact-link" href="https://www.instagram.com/sirfrosh_100/#" target="_blank" rel="noreferrer">instagram.com/sirfrosh_100</a>
+        </article>
+
+        <article class="book-card">
+          <div class="book-card-header">
+            <div class="book-icon"><i class="fa-brands fa-twitter"></i></div>
+            <div>
+              <h3>Twitter / X</h3>
+              <p>Reach out through the X account for quick encouragement and updates.</p>
+            </div>
+          </div>
+          <a class="contact-link" href="https://x.com/Sirfrosh100" target="_blank" rel="noreferrer">x.com/Sirfrosh100</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="books-overview">
+      <div class="section-head">
+        <h2>Send a quick message</h2>
+        <p>Fill your details and enquiry below, then the counseling team can follow up with you.</p>
+      </div>
+      <article class="book-card">
+        <form id="counseling-form" class="contact-form">
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Name</span>
+              <input type="text" name="name" required placeholder="Your full name">
+            </label>
+            <label class="form-field">
+              <span>Phone</span>
+              <input type="tel" name="phone" required placeholder="08154967104">
+            </label>
+            <label class="form-field">
+              <span>Email</span>
+              <input type="email" name="email" required placeholder="you@example.com">
+            </label>
+          </div>
+          <label class="form-field">
+            <span>Your enquiry</span>
+            <textarea name="message" rows="5" required placeholder="Tell us how we can help..."></textarea>
+          </label>
+          <div class="actions form-actions">
+            <button type="submit" class="button">Send message</button>
+          </div>
+          <p class="form-note">Your request will be saved securely in the ministry backend for follow-up.</p>
+          <p class="form-success" id="form-success" hidden>Your counseling request has been received.</p>
+        </form>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    Contact support is here for guidance, prayer, and spiritual care.
+  </footer>
+
+  <footer class="site-footer">
+    © 2026 template designed by SirFrosh100
+  </footer>
+
+  <script src="counseling.js"></script>
+</body>
+</html>

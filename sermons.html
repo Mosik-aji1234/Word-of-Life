@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word of Life - Sermons</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/fadca056b5.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand">
+        <img src="images/logo.png.png" alt="Word of Life logo" class="brand-logo">
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="books.html">Books</a>
+        <a href="sermons.html">Sermons</a>
+        <a href="bible.html">Bible</a>
+        <a href="counseling.html">Counseling</a>
+        <a href="tracts.html">Tracts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <article class="hero-card">
+        <h1>Listen to inspiring sermons</h1>
+        <p>Search popular ministers, preview recommended messages, and stream audio or embedded podcast episodes online.</p>
+        <div class="search-panel">
+          <input id="search-input" class="search-input" type="search" placeholder="Search by preacher, title, or topic..." autocomplete="off">
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="books-overview sermon-overview">
+      <div class="section-head">
+        <h2>Popular sermons</h2>
+        <p>Type a name or topic to quickly find messages from trusted voices.</p>
+      </div>
+
+      <div class="tags-row" id="tags-row"></div>
+
+      <div class="sermon-list" id="sermon-list"></div>
+
+      <div class="player-panel" id="player-panel">
+        <div class="player-info">
+          <div>
+            <p class="player-label">Now playing</p>
+            <h3 id="player-title">Select a sermon</h3>
+            <p id="player-preacher" class="player-subtitle"></p>
+          </div>
+          <a id="player-download" class="button-secondary disabled" href="#">Download</a>
+        </div>
+        <audio id="audio-player" controls preload="none" hidden></audio>
+        <div class="embed-player" id="embed-player" hidden></div>
+        <p class="player-note" id="player-note">Choose a sermon to begin listening.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Transforming Lives with God's Word..
+  </footer>
+
+  <footer class="site-footer">
+    © 2026 template designed by SirFrosh100
+  </footer>
+
+  <script src="sermons-data.js"></script>
+  <script src="sermons.js"></script>
+</body>
+</html>

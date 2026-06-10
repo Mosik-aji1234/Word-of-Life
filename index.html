@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Of Life</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/fadca056b5.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand">
+        <img src="images/logo.png.png" alt="Word of Life logo" class="brand-logo">
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="books.html">Books</a>
+        <a href="sermons.html">Sermons</a>
+        <a href="bible.html">Bible</a>
+        <a href="counseling.html">Counseling</a>
+        <a href="tracts.html">Tracts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <article class="hero-card">
+        <h1>Grow spiritually, one verse at a time.</h1>
+        <p>Use this page as your spiritual growth hub: daily inspiration, Bible downloads, and direct navigation to books, sermons, counseling, and tracts for deeper faith development.</p>
+
+        <div class="verse-box">
+          <span class="verse-label" id="verse-label">Today's verse</span>
+          <p id="verse"></p>
+          <span id="verse-ref" class="verse-ref"></span>
+          <div class="actions">
+            <button class="button" id="new-verse">Get New Verse</button>
+            <a class="button-secondary" href="SPIRIT SWORD/The Holy Bible (KJV).pdf" download>Download Bible PDF</a>
+          </div>
+        </div>
+      </article>
+
+      <div class="cards">
+        <article class="card">
+          <h2>Daily Devotion</h2>
+          <p>Start each morning with a verse, a short reflection, and a prompt that helps you apply God’s Word to your life.</p>
+        </article>
+        <article class="card">
+          <h2>Study Resources</h2>
+          <p>Link directly to the books, sermons, and Bible pages in your project so people can grow with structured content.</p>
+        </article>
+        <article class="card">
+          <h2>Prayer & Counseling</h2>
+          <p>Offer a simple spiritual support section that invites prayer requests and helps visitors know where to find guidance.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="guide-section">
+      <div class="guide-grid">
+        <article class="guide-item">
+          <div class="guide-icon"><i class="fa-solid fa-book"></i></div>
+          <h3>Read with intention</h3>
+          <p>Choose a verse each day and meditate on how it applies to your life.</p>
+        </article>
+        <article class="guide-item">
+          <div class="guide-icon"><i class="fa-solid fa-lightbulb"></i></div>
+          <h3>Reflect and journal</h3>
+          <p>Write one sentence about what the verse teaches you and how you can respond.</p>
+        </article>
+        <article class="guide-item">
+          <div class="guide-icon"><i class="fa-solid fa-hands-praying"></i></div>
+          <h3>Share and pray</h3>
+          <p>Encourage someone else with the scripture and pray for growth together.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="action-section">
+      <div class="action-grid">
+        <article class="action-card">
+          <h2>Today's devotional prompt</h2>
+          <p>Take a moment to write one practical step you can take today based on the verse you received.</p>
+          <button class="button-secondary" id="devotional-button" type="button">Show reflection prompt</button>
+          <p class="prompt-text" id="devotional-prompt"></p>
+        </article>
+
+        <article class="action-card prayer-card">
+          <h2>Prayer request</h2>
+          <p>Share a short prayer request and keep it in this space as a reminder to pray.</p>
+          <form id="prayer-form">
+            <textarea id="prayer-input" rows="4" placeholder="Write your prayer request here..."></textarea>
+            <button class="button" type="submit">Send request</button>
+            <p class="form-message" id="prayer-message"></p>
+          </form>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Transforming Lives with God's Word..
+  </footer>
+
+  <footer class="site-footer">
+    © 2026 template designed by SirFrosh100
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

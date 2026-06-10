@@ -1,0 +1,10 @@
+{
+  "name": "word-of-life",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Word of Life static site with a small Node API backend.",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  }
+}
