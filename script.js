@@ -38,24 +38,34 @@ function renderVerse(verse, label = "Today's verse") {
   if (verseLabelElement) verseLabelElement.innerText = label;
 }
 
-async function fetchDailyVerse() {
+async function fetchLiveVerse() {
   const response = await fetch('/api/daily-verse');
-  if (!response.ok) throw new Error('Daily verse API is unavailable');
+  if (!response.ok) throw new Error('Verse API unavailable');
   return response.json();
 }
 
 async function showDailyVerse() {
   try {
-    const verse = await fetchDailyVerse();
-    renderVerse(verse, verse.source === 'fallback' ? "Today's verse" : "Today's live verse");
-  } catch (error) {
+    const verse = await fetchLiveVerse();
+    renderVerse(verse, verse.source === 'fallback' ? "Today's verse" : "Today's verse");
+  } catch {
     renderVerse(getDailyVerse());
   }
 }
 
 if (newVerseButton) {
-  newVerseButton.addEventListener('click', () => {
-    renderVerse(getRandomVerse(), 'Another verse for you');
+  newVerseButton.addEventListener('click', async () => {
+    newVerseButton.disabled = true;
+    newVerseButton.textContent = 'Loading…';
+    try {
+      const verse = await fetchLiveVerse();
+      renderVerse(verse, 'New verse for you');
+    } catch {
+      renderVerse(getRandomVerse(), 'New verse for you');
+    } finally {
+      newVerseButton.disabled = false;
+      newVerseButton.textContent = 'Get New Verse';
+    }
   });
 }
 

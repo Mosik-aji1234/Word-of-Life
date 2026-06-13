@@ -1,20 +1,27 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+
 const fs = require('fs/promises');
 const http = require('http');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(__dirname, 'data');
 const SERMONS_FILE = path.join(DATA_DIR, 'sermons.json');
 const COUNSELING_REQUESTS_FILE = path.join(DATA_DIR, 'counseling-requests.json');
-const DAILY_VERSE_URL = 'https://beta.ourmanna.com/api/v1/get/?format=json&order=daily';
+
+const RANDOM_VERSE_URL = 'https://labs.bible.org/api/?passage=random&type=json';
 
 const fallbackVerses = [
   { text: 'The Lord is my shepherd; I shall not want.', ref: 'Psalm 23:1', source: 'fallback' },
   { text: 'I can do all things through Christ who strengthens me.', ref: 'Philippians 4:13', source: 'fallback' },
   { text: 'Trust in the Lord with all your heart and lean not on your own understanding.', ref: 'Proverbs 3:5', source: 'fallback' },
   { text: 'Be strong and courageous. Do not be afraid.', ref: 'Joshua 1:9', source: 'fallback' },
-  { text: 'Your word is a lamp to my feet and a light to my path.', ref: 'Psalm 119:105', source: 'fallback' }
+  { text: 'Your word is a lamp to my feet and a light to my path.', ref: 'Psalm 119:105', source: 'fallback' },
+  { text: 'For God so loved the world that He gave His only begotten Son.', ref: 'John 3:16', source: 'fallback' },
+  { text: 'Cast your burden on the Lord, and He shall sustain you.', ref: 'Psalm 55:22', source: 'fallback' },
+  { text: 'Let all that you do be done with love.', ref: '1 Corinthians 16:14', source: 'fallback' }
 ];
 
 const contentTypes = {
@@ -37,12 +44,129 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
-function getFallbackVerse() {
-  const today = new Date();
-  const seed = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
-    .split('')
-    .reduce((total, character) => total + character.charCodeAt(0), 0);
-  return fallbackVerses[seed % fallbackVerses.length];
+function getRandomFallbackVerse() {
+  return fallbackVerses[Math.floor(Math.random() * fallbackVerses.length)];
+}
+
+function stripHtml(text) {
+  return text.replace(/<[^>]*>/g, '');
+}
+
+function decodeHtmlEntities(text) {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#8220;/g, '“')
+    .replace(/&#8221;/g, '”')
+    .replace(/&#8212;/g, '—')
+    .replace(/&#8217;/g, '’')
+    .replace(/&#8216;/g, '‘')
+    .replace(/&mdash;/g, '—')
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&rdquo;/g, '”');
+}
+
+function normalizeLabsVerse(data) {
+  const verse = Array.isArray(data) ? data[0] : data;
+  return {
+    text: decodeHtmlEntities(stripHtml(verse.text)).trim(),
+    ref: `${verse.bookname} ${verse.chapter}:${verse.verse}`,
+    source: 'live'
+  };
+}
+
+async function fetchRandomVerse() {
+  const response = await fetch(RANDOM_VERSE_URL, {
+    headers: { 'Accept': 'application/json' }
+  });
+  if (!response.ok) throw new Error(`Verse API returned ${response.status}`);
+  return normalizeLabsVerse(await response.json());
+}
+
+function formatDuration(ms) {
+  if (!ms) return '';
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+async function searchPodcastSermons(query) {
+  const params = new URLSearchParams({
+    term: `${query} sermon`,
+    media: 'podcast',
+    entity: 'podcastEpisode',
+    limit: '15',
+    lang: 'en_us'
+  });
+
+  const response = await fetch(
+    `https://itunes.apple.com/search?${params}`,
+    { headers: { Accept: 'application/json' } }
+  );
+
+  if (!response.ok) throw new Error(`Podcast search returned ${response.status}`);
+
+  const data = await response.json();
+
+  return (data.results || [])
+    .filter(ep => ep.episodeUrl)
+    .map(ep => ({
+      id: String(ep.trackId),
+      title: decodeHtmlEntities(ep.trackName || 'Untitled'),
+      preacher: ep.artistName || ep.collectionName || '',
+      description: decodeHtmlEntities(
+        (ep.shortDescription || ep.description || '').slice(0, 140)
+      ),
+      category: ep.collectionName || 'Sermon Podcast',
+      duration: formatDuration(ep.trackTimeMillis),
+      sourceType: 'audio',
+      audioUrl: ep.episodeUrl,
+      downloadUrl: ep.episodeUrl,
+      thumbnail: ep.artworkUrl600 || ep.artworkUrl160 || '',
+      externalUrl: ep.trackViewUrl || '',
+      available: true
+    }));
+}
+
+function getEmailTransporter() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return null;
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD
+    }
+  });
+}
+
+async function sendCounselingEmail(req) {
+  const transporter = getEmailTransporter();
+  if (!transporter) return;
+  await transporter.sendMail({
+    from: `"Word of Life" <${process.env.GMAIL_USER}>`,
+    to: process.env.GMAIL_USER,
+    subject: `New Counseling Request from ${req.name}`,
+    html: `
+      <h2 style="color:#7b1f2a;">New Counseling Request</h2>
+      <p><strong>Name:</strong> ${req.name}</p>
+      <p><strong>Email:</strong> <a href="mailto:${req.email}">${req.email}</a></p>
+      <p><strong>Phone:</strong> ${req.phone}</p>
+      <p><strong>Message:</strong></p>
+      <blockquote style="border-left:4px solid #c9972b;padding:0.5rem 1rem;color:#444;">
+        ${req.message.replace(/\n/g, '<br>')}
+      </blockquote>
+      <hr>
+      <p style="color:#888;font-size:0.9rem;">Submitted: ${new Date().toLocaleString()}</p>
+    `
+  });
 }
 
 async function readJsonFile(filePath) {
@@ -52,11 +176,7 @@ async function readJsonFile(filePath) {
 
 async function readRequestBody(request) {
   const chunks = [];
-
-  for await (const chunk of request) {
-    chunks.push(chunk);
-  }
-
+  for await (const chunk of request) chunks.push(chunk);
   const body = Buffer.concat(chunks).toString('utf8');
   return body ? JSON.parse(body) : {};
 }
@@ -90,15 +210,6 @@ function validateCounselingRequest(payload) {
   return { request };
 }
 
-function normalizeDailyVerse(payload) {
-  const details = payload?.verse?.details || payload?.details || payload;
-  return {
-    text: details.text || details.content || '',
-    ref: details.reference || details.ref || '',
-    source: 'OurManna'
-  };
-}
-
 async function handleApi(request, response, url) {
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
@@ -115,6 +226,31 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (url.pathname === '/api/daily-verse' && request.method === 'GET') {
+    try {
+      const verse = await fetchRandomVerse();
+      sendJson(response, 200, verse);
+    } catch {
+      sendJson(response, 200, getRandomFallbackVerse());
+    }
+    return;
+  }
+
+  if (url.pathname === '/api/sermons/search' && request.method === 'GET') {
+    const query = url.searchParams.get('q') || '';
+    if (!query.trim()) {
+      sendJson(response, 400, { error: 'Search query is required' });
+      return;
+    }
+    try {
+      const results = await searchPodcastSermons(query.trim());
+      sendJson(response, 200, results);
+    } catch (error) {
+      sendJson(response, 502, { error: error.message });
+    }
+    return;
+  }
+
   if (url.pathname === '/api/sermons' && request.method === 'GET') {
     sendJson(response, 200, await readJsonFile(SERMONS_FILE));
     return;
@@ -125,7 +261,6 @@ async function handleApi(request, response, url) {
     const sermon = await readRequestBody(request);
     const nextId = sermons.reduce((highest, item) => Math.max(highest, item.id || 0), 0) + 1;
     const newSermon = { id: nextId, available: true, ...sermon };
-
     sermons.push(newSermon);
     await fs.writeFile(SERMONS_FILE, `${JSON.stringify(sermons, null, 2)}\n`);
     sendJson(response, 201, newSermon);
@@ -152,29 +287,12 @@ async function handleApi(request, response, url) {
 
     counselingRequests.push(newRequest);
     await fs.writeFile(COUNSELING_REQUESTS_FILE, `${JSON.stringify(counselingRequests, null, 2)}\n`);
+    sendCounselingEmail(newRequest).catch(() => {}); // non-blocking — failure doesn't affect the response
     sendJson(response, 201, {
       ok: true,
       message: 'Your counseling request has been received.',
       request: newRequest
     });
-    return;
-  }
-
-  if (url.pathname === '/api/daily-verse' && request.method === 'GET') {
-    try {
-      const apiResponse = await fetch(DAILY_VERSE_URL);
-      if (!apiResponse.ok) throw new Error(`Daily verse API returned ${apiResponse.status}`);
-
-      const verse = normalizeDailyVerse(await apiResponse.json());
-      if (!verse.text || !verse.ref) throw new Error('Daily verse API returned an unexpected response');
-
-      sendJson(response, 200, verse);
-    } catch (error) {
-      sendJson(response, 200, {
-        ...getFallbackVerse(),
-        note: 'Live daily verse is unavailable, so the local fallback was used.'
-      });
-    }
     return;
   }
 
@@ -197,7 +315,7 @@ async function serveStaticFile(request, response, url) {
       'Content-Type': contentTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream'
     });
     response.end(file);
-  } catch (error) {
+  } catch {
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     response.end('Not found');
   }
@@ -205,13 +323,11 @@ async function serveStaticFile(request, response, url) {
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
-
   try {
     if (url.pathname.startsWith('/api/')) {
       await handleApi(request, response, url);
       return;
     }
-
     await serveStaticFile(request, response, url);
   } catch (error) {
     sendJson(response, 500, { error: 'Server error', message: error.message });
@@ -220,4 +336,5 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, () => {
   console.log(`Word of Life server running at http://localhost:${PORT}`);
+  console.log(`Sermon search: iTunes Podcast API (no key required)`);
 });
