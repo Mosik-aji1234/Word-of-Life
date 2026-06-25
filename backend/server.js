@@ -324,10 +324,37 @@ async function serveStaticFile(request, response, url) {
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
   try {
+    const proto = request.headers['x-forwarded-proto'] || 'http';
+    const base = `${proto}://${request.headers.host}`;
+
+    if (url.pathname === '/robots.txt') {
+      response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${base}/sitemap.xml\n`);
+      return;
+    }
+
+    if (url.pathname === '/sitemap.xml') {
+      const pages = [
+        { loc: '/', priority: '1.0' },
+        { loc: '/books.html', priority: '0.8' },
+        { loc: '/sermons.html', priority: '0.8' },
+        { loc: '/bible.html', priority: '0.7' },
+        { loc: '/counseling.html', priority: '0.7' },
+        { loc: '/tracts.html', priority: '0.7' }
+      ];
+      const urls = pages
+        .map(p => `  <url><loc>${base}${p.loc}</loc><changefreq>weekly</changefreq><priority>${p.priority}</priority></url>`)
+        .join('\n');
+      response.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8' });
+      response.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
+      return;
+    }
+
     if (url.pathname.startsWith('/api/')) {
       await handleApi(request, response, url);
       return;
     }
+
     await serveStaticFile(request, response, url);
   } catch (error) {
     sendJson(response, 500, { error: 'Server error', message: error.message });
