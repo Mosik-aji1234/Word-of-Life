@@ -137,36 +137,45 @@ async function searchPodcastSermons(query) {
 }
 
 function getEmailTransporter() {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return null;
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) {
+    console.warn('Email not configured: GMAIL_USER or GMAIL_APP_PASSWORD is missing');
+    return null;
+  }
   return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: { user, pass }
   });
 }
 
 async function sendCounselingEmail(req) {
   const transporter = getEmailTransporter();
   if (!transporter) return;
-  await transporter.sendMail({
-    from: `"Word of Life" <${process.env.GMAIL_USER}>`,
-    to: process.env.GMAIL_USER,
-    subject: `New Counseling Request from ${req.name}`,
-    html: `
-      <h2 style="color:#7b1f2a;">New Counseling Request</h2>
-      <p><strong>Name:</strong> ${req.name}</p>
-      <p><strong>Email:</strong> <a href="mailto:${req.email}">${req.email}</a></p>
-      <p><strong>Phone:</strong> ${req.phone}</p>
-      <p><strong>Message:</strong></p>
-      <blockquote style="border-left:4px solid #c9972b;padding:0.5rem 1rem;color:#444;">
-        ${req.message.replace(/\n/g, '<br>')}
-      </blockquote>
-      <hr>
-      <p style="color:#888;font-size:0.9rem;">Submitted: ${new Date().toLocaleString()}</p>
-    `
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Word of Life" <${process.env.GMAIL_USER}>`,
+      to: process.env.GMAIL_USER,
+      subject: `New Counseling Request from ${req.name}`,
+      html: `
+        <h2 style="color:#7b1f2a;">New Counseling Request</h2>
+        <p><strong>Name:</strong> ${req.name}</p>
+        <p><strong>Email:</strong> <a href="mailto:${req.email}">${req.email}</a></p>
+        <p><strong>Phone:</strong> ${req.phone}</p>
+        <p><strong>Message:</strong></p>
+        <blockquote style="border-left:4px solid #c9972b;padding:0.5rem 1rem;color:#444;">
+          ${req.message.replace(/\n/g, '<br>')}
+        </blockquote>
+        <hr>
+        <p style="color:#888;font-size:0.9rem;">Submitted: ${new Date().toLocaleString()}</p>
+      `
+    });
+    console.log(`Counseling email sent for ${req.name} (${req.email})`);
+  } catch (err) {
+    console.error('Failed to send counseling email:', err.message);
+  }
 }
 
 async function readJsonFile(filePath) {
@@ -287,7 +296,7 @@ async function handleApi(request, response, url) {
 
     counselingRequests.push(newRequest);
     await fs.writeFile(COUNSELING_REQUESTS_FILE, `${JSON.stringify(counselingRequests, null, 2)}\n`);
-    sendCounselingEmail(newRequest).catch(() => {}); // non-blocking — failure doesn't affect the response
+    sendCounselingEmail(newRequest); // non-blocking — errors are logged inside the function
     sendJson(response, 201, {
       ok: true,
       message: 'Your counseling request has been received.',
