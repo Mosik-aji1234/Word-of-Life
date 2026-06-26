@@ -56,15 +56,15 @@ section a:hover {
 /* Home page styles */
 
 .brand-logo {
-  height: 52px;
+  height: 64px;
   width: auto;
-  max-width: 140px;
+  max-width: 180px;
   display: block;
   object-fit: contain;
 }
 
 @media (max-width: 640px) {
-  .brand-logo { height: 42px; }
+  .brand-logo { height: 52px; }
 }
 header {
   position: sticky;
