@@ -892,6 +892,41 @@ main {
   font-weight: 600;
 }
 
+#prayer-reminder {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: rgba(123, 31, 42, 0.06);
+  border-left: 4px solid var(--primary);
+  border-radius: 6px;
+}
+
+.prayer-reminder-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+  margin: 0 0 0.4rem;
+}
+
+.prayer-reminder-text {
+  font-style: italic;
+  color: var(--text);
+  margin: 0 0 0.35rem;
+  line-height: 1.5;
+}
+
+.prayer-reminder-date {
+  font-size: 0.78rem;
+  color: #888;
+  margin: 0 0 0.85rem;
+}
+
+.prayer-prayed-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+}
+
 @media (max-width: 760px) {
   .hero-card {
     padding: 1.5rem;

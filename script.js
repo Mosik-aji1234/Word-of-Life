@@ -88,6 +88,43 @@ if (devotionalButton) {
   });
 }
 
+const PRAYER_KEY = 'wol_prayer_request';
+
+function showPrayerReminder(request, dateStr) {
+  const prayerCard = document.querySelector('.prayer-card');
+  if (!prayerCard) return;
+  const existing = document.getElementById('prayer-reminder');
+  if (existing) existing.remove();
+
+  const reminder = document.createElement('div');
+  reminder.id = 'prayer-reminder';
+  reminder.innerHTML = `
+    <p class="prayer-reminder-label">Praying for:</p>
+    <p class="prayer-reminder-text">"${request}"</p>
+    ${dateStr ? `<p class="prayer-reminder-date">Added ${dateStr}</p>` : ''}
+    <button class="button-secondary prayer-prayed-btn" type="button">I have prayed this ✓</button>
+  `;
+  prayerCard.appendChild(reminder);
+
+  reminder.querySelector('.prayer-prayed-btn').addEventListener('click', () => {
+    localStorage.removeItem(PRAYER_KEY);
+    reminder.remove();
+    if (prayerMessage) {
+      prayerMessage.innerText = 'Great faith in action! Prayer marked as complete.';
+      setTimeout(() => { prayerMessage.innerText = ''; }, 3000);
+    }
+  });
+}
+
+function loadSavedPrayer() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PRAYER_KEY) || 'null');
+    if (!saved) return;
+    const dateStr = new Date(saved.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    showPrayerReminder(saved.request, dateStr);
+  } catch { /* ignore corrupt data */ }
+}
+
 if (prayerForm) {
   prayerForm.addEventListener('submit', event => {
     event.preventDefault();
@@ -96,9 +133,15 @@ if (prayerForm) {
       if (prayerMessage) prayerMessage.innerText = 'Please enter a short prayer request.';
       return;
     }
-    if (prayerMessage) prayerMessage.innerText = 'Thank you! Your prayer request is noted here for you to pray over.';
+    const entry = { request, date: new Date().toISOString() };
+    localStorage.setItem(PRAYER_KEY, JSON.stringify(entry));
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    showPrayerReminder(request, dateStr);
+    if (prayerMessage) prayerMessage.innerText = 'Saved! This will remind you to pray each time you return to this page.';
     if (prayerInput) prayerInput.value = '';
   });
 }
+
+loadSavedPrayer();
 
 showDailyVerse();
