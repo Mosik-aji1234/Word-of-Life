@@ -56,7 +56,7 @@ section a:hover {
 /* Home page styles */
 
 .brand-logo {
-  height: 64px;
+  height: 72px;
   width: auto;
   max-width: 180px;
   display: block;
@@ -64,7 +64,7 @@ section a:hover {
 }
 
 @media (max-width: 640px) {
-  .brand-logo { height: 52px; }
+  .brand-logo { height: 60px; }
 }
 header {
   position: sticky;
