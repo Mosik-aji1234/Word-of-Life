@@ -66,17 +66,17 @@ section a:hover {
 }
 
 @media (max-width: 1100px) {
-  .brand-logo { width: clamp(180px, 22vw, 240px); }
-  .brand { font-size: 1.15rem; margin-left: -0.4rem; }
+  .brand-logo { width: clamp(150px, 19vw, 180px); }
+  .brand { font-size: 1.15rem; margin-left: -0.3rem; }
 }
 
 @media (max-width: 760px) {
-  .brand-logo { width: clamp(150px, 30vw, 180px); }
-  .brand { font-size: 1.05rem; margin-left: -0.25rem; }
+  .brand-logo { width: clamp(120px, 22vw, 140px); }
+  .brand { font-size: 1.05rem; margin-left: -0.15rem; }
 }
 
 @media (max-width: 420px) {
-  .brand-logo { width: clamp(120px, 40vw, 140px); }
+  .brand-logo { width: clamp(100px, 28vw, 100px); }
   .brand { margin-left: 0; }
 }
 header {
