@@ -7,30 +7,83 @@ const searchInput = document.getElementById('search-input');
 const suggestionsContainer = document.getElementById('suggestions');
 const tagsRow = document.getElementById('tags-row');
 const sermonList = document.getElementById('sermon-list');
+
+// Player bar
 const audioPlayer = document.getElementById('audio-player');
-const playerTitle = document.getElementById('player-title');
-const playerPreacher = document.getElementById('player-preacher');
-const playerDownload = document.getElementById('player-download');
-const embedPlayer = document.getElementById('embed-player');
-const playerNote = document.getElementById('player-note');
+const playerBar = document.getElementById('player-bar');
+const playerBarThumb = document.getElementById('player-bar-thumb');
+const playerBarTitle = document.getElementById('player-bar-title');
+const playerBarPreacher = document.getElementById('player-bar-preacher');
+const playerBarPlay = document.getElementById('player-bar-play');
+const playerBarIcon = document.getElementById('player-bar-icon');
+const playerBarSeek = document.getElementById('player-bar-seek');
+const playerBarCurrent = document.getElementById('player-bar-current');
+const playerBarDuration = document.getElementById('player-bar-duration');
+const playerBarDownload = document.getElementById('player-bar-download');
+const playerBarClose = document.getElementById('player-bar-close');
+
+function formatTime(secs) {
+  if (!isFinite(secs) || secs < 0) return '0:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+if (audioPlayer) {
+  audioPlayer.addEventListener('timeupdate', () => {
+    if (audioPlayer.duration) {
+      if (playerBarSeek) playerBarSeek.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      if (playerBarCurrent) playerBarCurrent.innerText = formatTime(audioPlayer.currentTime);
+    }
+  });
+  audioPlayer.addEventListener('durationchange', () => {
+    if (playerBarDuration) playerBarDuration.innerText = formatTime(audioPlayer.duration);
+  });
+  audioPlayer.addEventListener('play', () => {
+    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-pause';
+  });
+  audioPlayer.addEventListener('pause', () => {
+    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
+  });
+  audioPlayer.addEventListener('ended', () => {
+    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
+    if (playerBarSeek) playerBarSeek.value = 0;
+    if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
+  });
+}
+
+if (playerBarPlay) {
+  playerBarPlay.addEventListener('click', () => {
+    if (!audioPlayer) return;
+    if (audioPlayer.paused) audioPlayer.play().catch(() => {});
+    else audioPlayer.pause();
+  });
+}
+
+if (playerBarSeek) {
+  playerBarSeek.addEventListener('input', () => {
+    if (audioPlayer && audioPlayer.duration) {
+      audioPlayer.currentTime = (playerBarSeek.value / 100) * audioPlayer.duration;
+    }
+  });
+}
+
+if (playerBarClose) {
+  playerBarClose.addEventListener('click', () => {
+    if (audioPlayer) { audioPlayer.pause(); audioPlayer.src = ''; }
+    if (playerBar) playerBar.hidden = true;
+    document.body.classList.remove('player-active');
+  });
+}
 
 function canPlay(sermon) {
-  return Boolean(
-    sermon.available &&
-    ((sermon.sourceType === 'audio' && sermon.audioUrl) ||
-      (sermon.sourceType === 'embed' && sermon.embedUrl) ||
-      (sermon.sourceType === 'youtube' && sermon.embedUrl))
-  );
+  return Boolean(sermon.available && sermon.sourceType === 'audio' && sermon.audioUrl);
 }
 
 function sourceLabel(sermon) {
-  if (sermon.sourceType === 'embed') return 'Podcast';
   if (sermon.sourceType === 'audio') return 'Audio';
+  if (sermon.sourceType === 'embed') return 'Podcast';
   return 'Coming soon';
-}
-
-function watchOrListen() {
-  return 'Listen';
 }
 
 function createQuickPill(text, container, className) {
@@ -77,31 +130,28 @@ function renderCards(sermons) {
 
   sermons.forEach(sermon => {
     const playable = canPlay(sermon);
-    const hasDownload = Boolean(sermon.downloadUrl);
-    const hasExternal = Boolean(sermon.externalUrl);
     const card = document.createElement('article');
     card.className = 'sermon-card';
 
     card.innerHTML = `
-      ${sermon.thumbnail ? `<img class="sermon-thumbnail" src="${sermon.thumbnail}" alt="${sermon.title}" loading="lazy">` : ''}
-      <div class="sermon-card-header">
-        <div>
+      ${sermon.thumbnail ? `<img class="sermon-thumbnail" src="${sermon.thumbnail}" alt="" loading="lazy">` : ''}
+      <div class="sermon-card-body">
+        <div class="sermon-card-text">
           <p class="sermon-label">${sermon.category}</p>
           <h3>${sermon.title}</h3>
-          <p>${sermon.description}</p>
+          ${sermon.description ? `<p class="sermon-desc">${sermon.description}</p>` : ''}
+          <div class="sermon-meta">
+            <span>${sermon.preacher}</span>
+            ${sermon.duration ? `<span>${sermon.duration}</span>` : ''}
+            ${sermon.releaseDate ? `<span>${sermon.releaseDate}</span>` : ''}
+          </div>
         </div>
-        <div class="sermon-meta">
-          <span>${sermon.preacher}</span>
-          ${sermon.duration ? `<span>${sermon.duration}</span>` : ''}
-          <span>${sourceLabel(sermon)}</span>
+        <div class="sermon-actions">
+          <button class="button${playable ? '' : ' disabled'}" type="button"${playable ? '' : ' disabled'}>
+            <i class="fa-solid fa-headphones"></i> Listen
+          </button>
+          ${sermon.externalUrl ? `<a class="button-secondary" href="${sermon.externalUrl}" target="_blank" rel="noopener">Source</a>` : ''}
         </div>
-      </div>
-      <div class="sermon-actions">
-        <button class="button${playable ? '' : ' disabled'}" type="button"${playable ? '' : ' disabled'}>
-          <i class="fa-solid fa-headphones"></i> ${watchOrListen()}
-        </button>
-        <a class="button-secondary${hasExternal ? '' : ' disabled'}"${hasExternal ? ` href="${sermon.externalUrl}" target="_blank" rel="noopener"` : ''}>Open source</a>
-        <a class="button-secondary${hasDownload ? '' : ' disabled'}"${hasDownload ? ` href="${sermon.downloadUrl}" download` : ''}>Download</a>
       </div>`;
 
     const listenBtn = card.querySelector('button.button');
@@ -113,80 +163,49 @@ function renderCards(sermons) {
 }
 
 function setPlayer(sermon) {
-  if (playerTitle) playerTitle.innerText = sermon.title;
-  if (playerPreacher) playerPreacher.innerText = sermon.preacher;
-
-  if (playerDownload) {
-    if (sermon.downloadUrl) {
-      playerDownload.href = sermon.downloadUrl;
-      playerDownload.setAttribute('download', '');
-      playerDownload.classList.remove('disabled');
+  if (playerBarThumb) {
+    if (sermon.thumbnail) {
+      playerBarThumb.src = sermon.thumbnail;
+      playerBarThumb.removeAttribute('hidden');
     } else {
-      playerDownload.href = '#';
-      playerDownload.removeAttribute('download');
-      playerDownload.classList.add('disabled');
+      playerBarThumb.setAttribute('hidden', '');
     }
   }
+  if (playerBarTitle) playerBarTitle.innerText = sermon.title;
+  if (playerBarPreacher) playerBarPreacher.innerText = sermon.preacher;
+  if (playerBarDownload) {
+    if (sermon.downloadUrl) {
+      playerBarDownload.href = sermon.downloadUrl;
+      playerBarDownload.removeAttribute('hidden');
+    } else {
+      playerBarDownload.setAttribute('hidden', '');
+    }
+  }
+  if (playerBarSeek) playerBarSeek.value = 0;
+  if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
+  if (playerBarDuration) playerBarDuration.innerText = '–:––';
+  if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
 
   if (audioPlayer) {
     audioPlayer.pause();
-    audioPlayer.removeAttribute('src');
+    audioPlayer.src = sermon.audioUrl || '';
     audioPlayer.load();
-    audioPlayer.hidden = true;
+    if (sermon.audioUrl) audioPlayer.play().catch(() => {});
   }
-
-  if (embedPlayer) {
-    embedPlayer.innerHTML = '';
-    embedPlayer.hidden = true;
-  }
-
-  if (sermon.sourceType === 'embed') {
-    if (embedPlayer) {
-      embedPlayer.hidden = false;
-      embedPlayer.innerHTML = `
-        <iframe
-          title="${sermon.title}"
-          src="${sermon.embedUrl}"
-          width="100%"
-          height="${sermon.embedHeight || 152}"
-          frameborder="0"
-          allowfullscreen
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy">
-        </iframe>`;
-    }
-    if (playerNote) playerNote.innerText = 'Embedded episode plays through the original provider.';
-    return;
-  }
-
-  if (audioPlayer) {
-    audioPlayer.hidden = false;
-    audioPlayer.src = sermon.audioUrl;
-    audioPlayer.load();
-    audioPlayer.play().catch(() => {});
-  }
-  if (playerNote) playerNote.innerText = 'Streaming from a direct audio URL.';
+  if (playerBar) playerBar.hidden = false;
+  document.body.classList.add('player-active');
 }
 
 async function triggerSearch(query) {
   const q = query.trim();
-
-  if (!q) {
-    renderCards(curatedSermons);
-    return;
-  }
-
+  if (!q) { renderCards(curatedSermons); return; }
   renderLoading();
-
   try {
     const res = await fetch(`/api/sermons/search?q=${encodeURIComponent(q)}`);
     const data = await res.json();
-
     if (!res.ok) throw new Error(data.error || 'Search failed');
-
     renderCards(data.length ? data : []);
   } catch {
-    // Fall back to filtering the curated list locally
     const lower = q.toLowerCase();
     const local = curatedSermons.filter(s =>
       [s.title, s.preacher, s.category, s.description].some(v => v?.toLowerCase().includes(lower))
@@ -199,10 +218,7 @@ if (searchInput) {
   searchInput.addEventListener('input', () => {
     clearTimeout(searchTimeout);
     const q = searchInput.value.trim();
-    if (!q) {
-      renderCards(curatedSermons);
-      return;
-    }
+    if (!q) { renderCards(curatedSermons); return; }
     searchTimeout = setTimeout(() => triggerSearch(q), 420);
   });
 }

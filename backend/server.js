@@ -187,6 +187,7 @@ async function searchPodcastSermons(query) {
 
   return (data.results || [])
     .filter(ep => ep.episodeUrl)
+    .sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0))
     .map(ep => ({
       id: String(ep.trackId),
       title: decodeHtmlEntities(ep.trackName || 'Untitled'),
@@ -196,6 +197,7 @@ async function searchPodcastSermons(query) {
       ),
       category: ep.collectionName || 'Sermon Podcast',
       duration: formatDuration(ep.trackTimeMillis),
+      releaseDate: ep.releaseDate ? ep.releaseDate.slice(0, 10) : '',
       sourceType: 'audio',
       audioUrl: ep.episodeUrl,
       downloadUrl: ep.episodeUrl,
