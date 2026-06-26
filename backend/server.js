@@ -3,7 +3,6 @@ require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') }
 const fs = require('fs/promises');
 const http = require('http');
 const path = require('path');
-const nodemailer = require('nodemailer');
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -136,42 +135,39 @@ async function searchPodcastSermons(query) {
     }));
 }
 
-function getEmailTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) {
-    console.warn('Email not configured: GMAIL_USER or GMAIL_APP_PASSWORD is missing');
-    return null;
-  }
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: { user, pass }
-  });
-}
-
 async function sendCounselingEmail(req) {
-  const transporter = getEmailTransporter();
-  if (!transporter) return;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('Email not configured: RESEND_API_KEY is missing');
+    return;
+  }
   try {
-    await transporter.sendMail({
-      from: `"Word of Life" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
-      subject: `New Counseling Request from ${req.name}`,
-      html: `
-        <h2 style="color:#7b1f2a;">New Counseling Request</h2>
-        <p><strong>Name:</strong> ${req.name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${req.email}">${req.email}</a></p>
-        <p><strong>Phone:</strong> ${req.phone}</p>
-        <p><strong>Message:</strong></p>
-        <blockquote style="border-left:4px solid #c9972b;padding:0.5rem 1rem;color:#444;">
-          ${req.message.replace(/\n/g, '<br>')}
-        </blockquote>
-        <hr>
-        <p style="color:#888;font-size:0.9rem;">Submitted: ${new Date().toLocaleString()}</p>
-      `
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Word of Life <onboarding@resend.dev>',
+        to: ['mosik.aji15@gmail.com'],
+        subject: `New Counseling Request from ${req.name}`,
+        html: `
+          <h2 style="color:#7b1f2a;">New Counseling Request</h2>
+          <p><strong>Name:</strong> ${req.name}</p>
+          <p><strong>Email:</strong> <a href="mailto:${req.email}">${req.email}</a></p>
+          <p><strong>Phone:</strong> ${req.phone}</p>
+          <p><strong>Message:</strong></p>
+          <blockquote style="border-left:4px solid #c9972b;padding:0.5rem 1rem;color:#444;">
+            ${req.message.replace(/\n/g, '<br>')}
+          </blockquote>
+          <hr>
+          <p style="color:#888;font-size:0.9rem;">Submitted: ${new Date().toLocaleString()}</p>
+        `
+      })
     });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || JSON.stringify(data));
     console.log(`Counseling email sent for ${req.name} (${req.email})`);
   } catch (err) {
     console.error('Failed to send counseling email:', err.message);
