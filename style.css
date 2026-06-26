@@ -58,7 +58,7 @@ section a:hover {
 .brand-logo {
   width: clamp(220px, 18vw, 300px);
   max-width: 100%;
-  height: auto;
+  height: 22vh;
   display: block;
   background: transparent;
   border-radius: 0;
