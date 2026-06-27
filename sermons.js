@@ -8,29 +8,24 @@ const suggestionsContainer = document.getElementById('suggestions');
 const tagsRow = document.getElementById('tags-row');
 const sermonList = document.getElementById('sermon-list');
 
+const playerPanel = document.getElementById('player-panel');
+const playerTitle = document.getElementById('player-title');
+const playerPreacher = document.getElementById('player-preacher');
 const audioPlayer = document.getElementById('audio-player');
-const playerBar = document.getElementById('player-bar');
-const playerBarThumb = document.getElementById('player-bar-thumb');
-const playerBarTitle = document.getElementById('player-bar-title');
-const playerBarPreacher = document.getElementById('player-bar-preacher');
-const playerBarDownload = document.getElementById('player-bar-download');
-const playerBarClose = document.getElementById('player-bar-close');
-
-if (playerBarClose) {
-  playerBarClose.addEventListener('click', () => {
-    if (audioPlayer) { audioPlayer.pause(); audioPlayer.src = ''; }
-    if (playerBar) playerBar.hidden = true;
-    document.body.classList.remove('player-active');
-  });
-}
+const embedPlayer = document.getElementById('embed-player');
+const playerDownload = document.getElementById('player-download');
 
 function canPlay(sermon) {
-  return Boolean(sermon.available && sermon.sourceType === 'audio' && sermon.audioUrl);
+  return Boolean(
+    sermon.available &&
+    ((sermon.sourceType === 'audio' && sermon.audioUrl) ||
+      (sermon.sourceType === 'embed' && sermon.embedUrl))
+  );
 }
 
 function sourceLabel(sermon) {
+  if (sermon.sourceType === 'embed') return 'Spotify';
   if (sermon.sourceType === 'audio') return 'Audio';
-  if (sermon.sourceType === 'embed') return 'Podcast';
   return 'Coming soon';
 }
 
@@ -92,13 +87,14 @@ function renderCards(sermons) {
             <span>${sermon.preacher}</span>
             ${sermon.duration ? `<span>${sermon.duration}</span>` : ''}
             ${sermon.releaseDate ? `<span>${sermon.releaseDate}</span>` : ''}
+            <span>${sourceLabel(sermon)}</span>
           </div>
         </div>
         <div class="sermon-actions">
           <button class="button${playable ? '' : ' disabled'}" type="button"${playable ? '' : ' disabled'}>
             <i class="fa-solid fa-headphones"></i> Listen
           </button>
-          ${sermon.externalUrl ? `<a class="button-secondary" href="${sermon.externalUrl}" target="_blank" rel="noopener">Source</a>` : ''}
+          ${sermon.externalUrl ? `<a class="button-secondary" href="${sermon.externalUrl}" target="_blank" rel="noopener">Open source</a>` : ''}
         </div>
       </div>`;
 
@@ -111,33 +107,52 @@ function renderCards(sermons) {
 }
 
 function setPlayer(sermon) {
-  if (playerBarThumb) {
-    if (sermon.thumbnail) {
-      playerBarThumb.src = sermon.thumbnail;
-      playerBarThumb.removeAttribute('hidden');
-    } else {
-      playerBarThumb.setAttribute('hidden', '');
+  if (playerTitle) playerTitle.innerText = sermon.title;
+  if (playerPreacher) playerPreacher.innerText = sermon.preacher;
+
+  // Reset both players
+  if (audioPlayer) {
+    audioPlayer.pause();
+    audioPlayer.src = '';
+    audioPlayer.hidden = true;
+  }
+  if (embedPlayer) {
+    embedPlayer.innerHTML = '';
+    embedPlayer.hidden = true;
+  }
+  if (playerDownload) {
+    playerDownload.href = '#';
+    playerDownload.className = 'button-secondary disabled';
+  }
+
+  if (sermon.sourceType === 'embed' && sermon.embedUrl) {
+    if (embedPlayer) {
+      embedPlayer.hidden = false;
+      embedPlayer.innerHTML = `<iframe
+        src="${sermon.embedUrl}"
+        title="${sermon.title}"
+        width="100%"
+        height="${sermon.embedHeight || 152}"
+        frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"></iframe>`;
+    }
+  } else if (sermon.sourceType === 'audio' && sermon.audioUrl) {
+    if (audioPlayer) {
+      audioPlayer.src = sermon.audioUrl;
+      audioPlayer.hidden = false;
+      audioPlayer.play().catch(() => {});
+    }
+    if (playerDownload && sermon.downloadUrl) {
+      playerDownload.href = sermon.downloadUrl;
+      playerDownload.className = 'button-secondary';
     }
   }
-  if (playerBarTitle) playerBarTitle.innerText = sermon.title;
-  if (playerBarPreacher) playerBarPreacher.innerText = sermon.preacher;
 
-  if (playerBarDownload) {
-    if (sermon.downloadUrl) {
-      playerBarDownload.href = sermon.downloadUrl;
-      playerBarDownload.removeAttribute('hidden');
-    } else {
-      playerBarDownload.setAttribute('hidden', '');
-    }
+  if (playerPanel) {
+    playerPanel.hidden = false;
+    playerPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-
-  if (audioPlayer && sermon.audioUrl) {
-    audioPlayer.src = sermon.audioUrl;
-    audioPlayer.play().catch(() => {});
-  }
-
-  if (playerBar) playerBar.hidden = false;
-  document.body.classList.add('player-active');
 }
 
 async function triggerSearch(query) {

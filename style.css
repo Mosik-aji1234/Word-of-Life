@@ -754,113 +754,59 @@ main {
   font-size: 0.88rem;
 }
 
-/* Spotify-style fixed bottom player bar */
-.player-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #2a0811;
-  color: #fff;
-  z-index: 1000;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
-  padding: 0.55rem 1.25rem 0.45rem;
+/* Now-playing panel */
+.player-panel {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 20px rgba(64, 19, 26, 0.08);
+  scroll-margin-top: 5rem;
 }
 
-.player-bar[hidden] { display: none; }
+.player-panel[hidden] { display: none; }
 
-.player-active main { padding-bottom: 5.5rem; }
-
-.player-bar-top {
-  max-width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.player-bar-info {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-}
-
-.player-bar-thumb {
-  width: 42px;
-  height: 42px;
-  border-radius: 6px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.player-bar-text { min-width: 0; }
-
-.player-bar-title {
-  font-weight: 700;
-  font-size: 0.85rem;
-  margin: 0;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.player-bar-preacher {
+.player-label {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-size: 0.75rem;
-  margin: 0.1rem 0 0;
-  color: rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700;
 }
 
-.player-bar-btns {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
+.player-panel h3 {
+  margin: 0 0 0.2rem;
+  color: var(--primary);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
 }
 
-.player-bar-dl {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 1rem;
-  text-decoration: none;
-  padding: 0.35rem 0.45rem;
-  border-radius: 5px;
-  transition: color 0.2s;
-  line-height: 1;
+.player-subtitle {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-.player-bar-dl:hover { color: #fff; }
-
-.player-bar-close {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0.35rem 0.4rem;
-  border-radius: 5px;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-.player-bar-close:hover { color: #fff; }
-
-.player-bar-audio {
+.player-audio {
   width: 100%;
   display: block;
-  margin-top: 0.4rem;
-  height: 36px;
-  color-scheme: dark;
-  accent-color: #c9972b;
+  margin-bottom: 1rem;
+  accent-color: var(--primary);
 }
 
-@media (max-width: 480px) {
-  .player-bar { padding: 0.5rem 0.75rem 0.45rem; }
-  .player-bar-thumb { width: 36px; height: 36px; }
+.embed-player {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.embed-player iframe {
+  display: block;
+  width: 100%;
+  border: 0;
 }
 
 .no-results {
