@@ -50,6 +50,10 @@ if (audioPlayer) {
     if (playerBarSeek) playerBarSeek.value = 0;
     if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
   });
+  audioPlayer.addEventListener('error', () => {
+    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-triangle-exclamation';
+    if (playerBarPreacher) playerBarPreacher.innerText = 'Stream unavailable — try another message.';
+  });
 }
 
 if (playerBarPlay) {
@@ -184,7 +188,7 @@ function setPlayer(sermon) {
   if (playerBarSeek) playerBarSeek.value = 0;
   if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
   if (playerBarDuration) playerBarDuration.innerText = '–:––';
-  if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
+  if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-circle-notch fa-spin';
 
   if (audioPlayer) {
     audioPlayer.pause();

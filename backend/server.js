@@ -199,8 +199,8 @@ async function searchPodcastSermons(query) {
       duration: formatDuration(ep.trackTimeMillis),
       releaseDate: ep.releaseDate ? ep.releaseDate.slice(0, 10) : '',
       sourceType: 'audio',
-      audioUrl: ep.episodeUrl,
-      downloadUrl: ep.episodeUrl,
+      audioUrl: ep.episodeUrl.replace(/^http:\/\//i, 'https://'),
+      downloadUrl: ep.episodeUrl.replace(/^http:\/\//i, 'https://'),
       thumbnail: ep.artworkUrl600 || ep.artworkUrl160 || '',
       externalUrl: ep.trackViewUrl || '',
       available: true
