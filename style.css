@@ -823,24 +823,6 @@ main {
   flex-shrink: 0;
 }
 
-.player-bar-playbtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #2a0811;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  transition: transform 0.15s;
-}
-
-.player-bar-playbtn:hover { transform: scale(1.08); }
-
 .player-bar-dl {
   color: rgba(255, 255, 255, 0.65);
   font-size: 1rem;
@@ -858,7 +840,7 @@ main {
   border: none;
   color: rgba(255, 255, 255, 0.55);
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   padding: 0.35rem 0.4rem;
   border-radius: 5px;
   line-height: 1;
@@ -867,54 +849,18 @@ main {
 
 .player-bar-close:hover { color: #fff; }
 
-.player-bar-progress {
-  max-width: 1180px;
-  margin: 0.4rem auto 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.player-bar-time {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.55);
-  min-width: 32px;
-  white-space: nowrap;
-}
-
-.player-bar-seek {
-  flex: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-  outline: none;
-}
-
-.player-bar-seek::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-
-.player-bar-seek::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  cursor: pointer;
+.player-bar-audio {
+  width: 100%;
+  display: block;
+  margin-top: 0.4rem;
+  height: 36px;
+  color-scheme: dark;
+  accent-color: #c9972b;
 }
 
 @media (max-width: 480px) {
-  .player-bar { padding: 0.5rem 0.75rem 0.4rem; }
+  .player-bar { padding: 0.5rem 0.75rem 0.45rem; }
   .player-bar-thumb { width: 36px; height: 36px; }
-  .player-bar-playbtn { width: 34px; height: 34px; font-size: 0.82rem; }
 }
 
 .no-results {

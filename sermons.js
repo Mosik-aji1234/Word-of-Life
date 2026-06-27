@@ -8,69 +8,13 @@ const suggestionsContainer = document.getElementById('suggestions');
 const tagsRow = document.getElementById('tags-row');
 const sermonList = document.getElementById('sermon-list');
 
-// Player bar
 const audioPlayer = document.getElementById('audio-player');
 const playerBar = document.getElementById('player-bar');
 const playerBarThumb = document.getElementById('player-bar-thumb');
 const playerBarTitle = document.getElementById('player-bar-title');
 const playerBarPreacher = document.getElementById('player-bar-preacher');
-const playerBarPlay = document.getElementById('player-bar-play');
-const playerBarIcon = document.getElementById('player-bar-icon');
-const playerBarSeek = document.getElementById('player-bar-seek');
-const playerBarCurrent = document.getElementById('player-bar-current');
-const playerBarDuration = document.getElementById('player-bar-duration');
 const playerBarDownload = document.getElementById('player-bar-download');
 const playerBarClose = document.getElementById('player-bar-close');
-
-function formatTime(secs) {
-  if (!isFinite(secs) || secs < 0) return '0:00';
-  const m = Math.floor(secs / 60);
-  const s = Math.floor(secs % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-if (audioPlayer) {
-  audioPlayer.addEventListener('timeupdate', () => {
-    if (audioPlayer.duration) {
-      if (playerBarSeek) playerBarSeek.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-      if (playerBarCurrent) playerBarCurrent.innerText = formatTime(audioPlayer.currentTime);
-    }
-  });
-  audioPlayer.addEventListener('durationchange', () => {
-    if (playerBarDuration) playerBarDuration.innerText = formatTime(audioPlayer.duration);
-  });
-  audioPlayer.addEventListener('play', () => {
-    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-pause';
-  });
-  audioPlayer.addEventListener('pause', () => {
-    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
-  });
-  audioPlayer.addEventListener('ended', () => {
-    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-play';
-    if (playerBarSeek) playerBarSeek.value = 0;
-    if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
-  });
-  audioPlayer.addEventListener('error', () => {
-    if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-triangle-exclamation';
-    if (playerBarPreacher) playerBarPreacher.innerText = 'Stream unavailable — try another message.';
-  });
-}
-
-if (playerBarPlay) {
-  playerBarPlay.addEventListener('click', () => {
-    if (!audioPlayer) return;
-    if (audioPlayer.paused) audioPlayer.play().catch(() => {});
-    else audioPlayer.pause();
-  });
-}
-
-if (playerBarSeek) {
-  playerBarSeek.addEventListener('input', () => {
-    if (audioPlayer && audioPlayer.duration) {
-      audioPlayer.currentTime = (playerBarSeek.value / 100) * audioPlayer.duration;
-    }
-  });
-}
 
 if (playerBarClose) {
   playerBarClose.addEventListener('click', () => {
@@ -177,6 +121,7 @@ function setPlayer(sermon) {
   }
   if (playerBarTitle) playerBarTitle.innerText = sermon.title;
   if (playerBarPreacher) playerBarPreacher.innerText = sermon.preacher;
+
   if (playerBarDownload) {
     if (sermon.downloadUrl) {
       playerBarDownload.href = sermon.downloadUrl;
@@ -185,17 +130,12 @@ function setPlayer(sermon) {
       playerBarDownload.setAttribute('hidden', '');
     }
   }
-  if (playerBarSeek) playerBarSeek.value = 0;
-  if (playerBarCurrent) playerBarCurrent.innerText = '0:00';
-  if (playerBarDuration) playerBarDuration.innerText = '–:––';
-  if (playerBarIcon) playerBarIcon.className = 'fa-solid fa-circle-notch fa-spin';
 
-  if (audioPlayer) {
-    audioPlayer.pause();
-    audioPlayer.src = sermon.audioUrl || '';
-    audioPlayer.load();
-    if (sermon.audioUrl) audioPlayer.play().catch(() => {});
+  if (audioPlayer && sermon.audioUrl) {
+    audioPlayer.src = sermon.audioUrl;
+    audioPlayer.play().catch(() => {});
   }
+
   if (playerBar) playerBar.hidden = false;
   document.body.classList.add('player-active');
 }

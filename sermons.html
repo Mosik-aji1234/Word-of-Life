@@ -57,7 +57,7 @@
     </section>
   </main>
 
-  <!-- Spotify-style fixed bottom player -->
+  <!-- Fixed bottom player bar -->
   <div class="player-bar" id="player-bar" hidden>
     <div class="player-bar-top">
       <div class="player-bar-info">
@@ -68,9 +68,6 @@
         </div>
       </div>
       <div class="player-bar-btns">
-        <button class="player-bar-playbtn" id="player-bar-play" type="button" aria-label="Play / Pause">
-          <i class="fa-solid fa-play" id="player-bar-icon"></i>
-        </button>
         <a id="player-bar-download" class="player-bar-dl" href="#" title="Download" hidden>
           <i class="fa-solid fa-download"></i>
         </a>
@@ -79,13 +76,8 @@
         </button>
       </div>
     </div>
-    <div class="player-bar-progress">
-      <span class="player-bar-time" id="player-bar-current">0:00</span>
-      <input type="range" class="player-bar-seek" id="player-bar-seek" value="0" min="0" max="100" step="0.1">
-      <span class="player-bar-time" id="player-bar-duration">–:––</span>
-    </div>
+    <audio id="audio-player" controls preload="none" class="player-bar-audio"></audio>
   </div>
-  <audio id="audio-player" preload="none"></audio>
 
   <footer class="site-footer">
     <p>Transforming Lives with God's Word</p>
