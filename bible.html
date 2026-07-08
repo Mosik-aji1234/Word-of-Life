@@ -41,15 +41,82 @@
       </article>
     </section>
 
+    <!-- Bible App Interface -->
+    <section class="bible-app">
+      <div class="bible-controls">
+        <div class="control-group">
+          <label for="bible-version">Version:</label>
+          <select id="bible-version">
+            <option value="kjv">King James Version (KJV)</option>
+            <option value="web">World English Bible (WEB)</option>
+            <option value="asv">American Standard Version (ASV)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="verse-search">Search verse:</label>
+          <input type="text" id="verse-search" placeholder="e.g., John 3:16 or Genesis 1" autocomplete="off">
+          <button id="search-btn" class="button">Search</button>
+        </div>
+      </div>
+
+      <div class="bible-navigation">
+        <button id="prev-btn" class="button-secondary">← Previous</button>
+        <span id="current-ref" class="current-ref">Genesis 1</span>
+        <button id="next-btn" class="button-secondary">Next →</button>
+      </div>
+
+      <div id="bible-display" class="bible-display">
+        <p class="loading">Loading Bible verses...</p>
+      </div>
+
+      <div class="bible-actions">
+        <button id="save-favorite-btn" class="button-secondary" title="Save verse to favorites">
+          <i class="fa-solid fa-heart"></i> Save to Favorites
+        </button>
+        <button id="add-note-btn" class="button-secondary" title="Add personal note to verse">
+          <i class="fa-solid fa-note-sticky"></i> Add Note
+        </button>
+      </div>
+
+      <div id="note-modal" class="modal hidden">
+        <div class="modal-content">
+          <h3>Add Note to Verse</h3>
+          <textarea id="note-text" placeholder="Write your personal note here..."></textarea>
+          <div class="modal-actions">
+            <button id="save-note-btn" class="button">Save Note</button>
+            <button id="cancel-note-btn" class="button-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="user-content">
+      <div class="section-head">
+        <h2>My Favorites & Notes</h2>
+        <p id="login-prompt" class="login-prompt hidden"><a href="account.html">Sign in</a> to save favorites and add notes to verses.</p>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="favorites">Favorite Verses</button>
+        <button class="tab-btn" data-tab="notes">My Notes</button>
+      </div>
+      <div id="favorites" class="tab-content active">
+        <div id="favorites-list" class="content-list"></div>
+      </div>
+      <div id="notes" class="tab-content">
+        <div id="notes-list" class="content-list"></div>
+      </div>
+    </section>
+
     <section class="books-overview">
       <div class="section-head">
-        <h2>Start your Bible journey</h2>
-        <p>Use this page to access Scripture downloads, follow reading plans, and deepen your study with reflection tools.</p>
+        <h2>Bible Resources</h2>
+        <p>Additional tools and downloads for your Bible study.</p>
       </div>
       <div class="books-grid">
         <article class="book-card">
           <div class="book-card-header">
-            <div class="book-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div class="book-icon"><i class="fa-solid fa-download"></i></div>
             <div>
               <h3>Download the Bible</h3>
               <p>Read offline with the complete Bible PDF.</p>
@@ -75,20 +142,6 @@
             <li><strong>Day 7:</strong> Hebrews 11</li>
           </ol>
         </article>
-        <article class="book-card">
-          <div class="book-card-header">
-            <div class="book-icon"><i class="fa-solid fa-lightbulb"></i></div>
-            <div>
-              <h3>Study tools</h3>
-              <p>Reflection prompts and memory verses to help you apply what you read.</p>
-            </div>
-          </div>
-          <ul class="download-list">
-            <li>Daily prayer prompts</li>
-            <li>Verse meditation notes</li>
-            <li>Study questions for every passage</li>
-          </ul>
-        </article>
       </div>
     </section>
   </main>
@@ -99,5 +152,7 @@
   </footer>
 
   <script src="nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="bible.js"></script>
 </body>
 </html>
