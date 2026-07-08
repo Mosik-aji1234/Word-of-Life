@@ -26,10 +26,12 @@ const noteModal = document.getElementById('note-modal');
 const noteText = document.getElementById('note-text');
 const saveNoteBtn = document.getElementById('save-note-btn');
 const cancelNoteBtn = document.getElementById('cancel-note-btn');
+const cancelNoteFooter = document.getElementById('cancel-note-btn-footer');
+const charCount = document.getElementById('char-count');
 const loginPrompt = document.getElementById('login-prompt');
 const favoritesList = document.getElementById('favorites-list');
 const notesList = document.getElementById('notes-list');
-const tabBtns = document.querySelectorAll('.tab-btn');
+const tabBtns = document.querySelectorAll('.library-tab');
 
 // Bible book data for navigation
 const bibleBooks = {
@@ -133,7 +135,7 @@ async function initSupabase() {
 // Fetch verse from Bible API
 async function fetchVerse(reference) {
   try {
-    bibleDisplay.innerHTML = '<p class="loading">Loading...</p>';
+    bibleDisplay.innerHTML = '<div class="loading-state"><i class="fa-solid fa-book-open"></i><p>Loading Scripture...</p></div>';
     const response = await fetch(`${BIBLE_API}/${reference}`);
     
     if (!response.ok) {
@@ -144,7 +146,7 @@ async function fetchVerse(reference) {
     currentVerses = data.verses || [];
     
     if (currentVerses.length === 0) {
-      bibleDisplay.innerHTML = '<p class="error">No verses found. Try a different reference.</p>';
+      bibleDisplay.innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> No verses found. Try a different reference.</div>';
       return false;
     }
 
@@ -152,7 +154,7 @@ async function fetchVerse(reference) {
     currentRef.innerText = reference;
     return true;
   } catch (error) {
-    bibleDisplay.innerHTML = `<p class="error">Error loading verses: ${error.message}</p>`;
+    bibleDisplay.innerHTML = `<div class="error"><i class="fa-solid fa-circle-exclamation"></i> <strong>Error:</strong> ${error.message}</div>`;
     return false;
   }
 }
@@ -160,7 +162,7 @@ async function fetchVerse(reference) {
 // Display verses in the Bible display area
 function displayVerses() {
   if (currentVerses.length === 0) {
-    bibleDisplay.innerHTML = '<p class="error">No verses to display.</p>';
+    bibleDisplay.innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> No verses to display.</div>';
     return;
   }
 
@@ -325,12 +327,21 @@ cancelNoteBtn.addEventListener('click', () => {
   noteModal.classList.add('hidden');
 });
 
+cancelNoteFooter.addEventListener('click', () => {
+  noteModal.classList.add('hidden');
+});
+
+// Character counter
+noteText.addEventListener('input', () => {
+  charCount.innerText = noteText.value.length;
+});
+
 // Update user content (favorites and notes)
 async function updateUserContent() {
   if (!currentUser || !supabaseClient) {
     loginPrompt.classList.remove('hidden');
-    favoritesList.innerHTML = '<p>Sign in to see your favorites.</p>';
-    notesList.innerHTML = '<p>Sign in to see your notes.</p>';
+    favoritesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to see your favorites.</p>';
+    notesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to see your notes.</p>';
     return;
   }
 
@@ -351,19 +362,22 @@ async function updateUserContent() {
           <div class="content-item">
             <strong>${fav.verse_reference}</strong>
             <p>${fav.verse_text}</p>
-            <button class="delete-btn" onclick="deleteFavorite('${fav.id}')">Delete</button>
+            <button class="delete-btn" onclick="deleteFavorite('${fav.id}')">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
           </div>
         `)
         .join('');
     } else {
-      favoritesList.innerHTML = '<p>No favorite verses yet.</p>';
+      favoritesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-bookmark"></i> No favorite verses yet. Start saving your favorites!</p>';
     }
 
     // Load notes
     const { data: notes, error: notesError } = await supabaseClient
       .from('verse_notes')
       .select('*')
-      .eq('user_id', currentUser.id);
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
 
     if (notesError) throw notesError;
 
@@ -373,12 +387,15 @@ async function updateUserContent() {
           <div class="content-item">
             <strong>${note.verse_reference}</strong>
             <p>${note.note_text}</p>
-            <button class="delete-btn" onclick="deleteNote('${note.id}')">Delete</button>
+            <small style="color: var(--muted);">Added ${new Date(note.created_at).toLocaleDateString()}</small>
+            <button class="delete-btn" onclick="deleteNote('${note.id}')">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
           </div>
         `)
         .join('');
     } else {
-      notesList.innerHTML = '<p>No notes yet.</p>';
+      notesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-note-sticky"></i> No notes yet. Add your thoughts to verses!</p>';
     }
   } catch (error) {
     console.error('Error loading user content:', error);
@@ -420,11 +437,11 @@ tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const tabName = btn.dataset.tab;
     
-    // Remove active class from all buttons and contents
+    // Remove active class from all buttons and panels
     tabBtns.forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    document.querySelectorAll('.library-panel').forEach(panel => panel.classList.remove('active'));
     
-    // Add active class to clicked button and corresponding content
+    // Add active class to clicked button and corresponding panel
     btn.classList.add('active');
     document.getElementById(tabName).classList.add('active');
   });
