@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create a Word of Life profile, track Bible reading, prayer, devotionals, and spiritual growth progress.">
+  <meta name="keywords" content="Christian dashboard, Bible reading tracker, spiritual growth tracker, prayer journal, Word of Life account">
+  <meta property="og:title" content="My Growth Dashboard - Word of Life">
+  <meta property="og:description" content="Track your Bible reading, prayer life, devotionals, and spiritual growth progress.">
+  <meta property="og:type" content="website">
+  <meta name="robots" content="index, follow">
+  <title>My Dashboard - Word of Life</title>
+  <link rel="icon" type="image/png" href="images/WOL logo 1.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/fadca056b5.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand">
+        <img src="images/WOL logo 1.png" alt="Word of Life logo" class="brand-logo">
+      </div>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="account.html">Dashboard</a>
+        <a href="books.html">Books</a>
+        <a href="sermons.html">Sermons</a>
+        <a href="bible.html">Bible</a>
+        <a href="counseling.html">Counseling</a>
+        <a href="tracts.html">Tracts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="dashboard-hero">
+      <div>
+        <p class="dashboard-kicker">Personal growth hub</p>
+        <h1 id="dashboard-title">Create your growth profile</h1>
+        <p id="dashboard-subtitle">Keep your Bible reading, prayer focus, devotional rhythm, and quiz progress in one place.</p>
+      </div>
+      <div class="dashboard-avatar" aria-hidden="true">
+        <i class="fa-solid fa-user-check"></i>
+      </div>
+    </section>
+
+    <section class="account-gate" id="account-gate">
+      <article class="account-panel">
+        <div class="section-head account-head">
+          <h2>Sign in to your dashboard</h2>
+          <p>Create a secure account or sign in to sync your spiritual growth progress.</p>
+        </div>
+        <div class="auth-notice" id="auth-notice" hidden></div>
+        <form id="profile-form" class="profile-form">
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Name</span>
+              <input type="text" name="name" placeholder="Your name">
+            </label>
+            <label class="form-field">
+              <span>Email</span>
+              <input type="email" name="email" required placeholder="you@example.com">
+            </label>
+            <label class="form-field">
+              <span>Password</span>
+              <input type="password" name="password" required minlength="6" placeholder="At least 6 characters">
+            </label>
+            <label class="form-field">
+              <span>Growth focus</span>
+              <select name="focus">
+                <option value="Bible consistency">Bible consistency</option>
+                <option value="Prayer life">Prayer life</option>
+                <option value="Spiritual discipline">Spiritual discipline</option>
+                <option value="Evangelism">Evangelism</option>
+                <option value="Leadership">Leadership</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions form-actions">
+            <button class="button" type="submit" data-auth-action="signup">Create account</button>
+            <button class="button-secondary" type="submit" data-auth-action="signin">Sign in</button>
+          </div>
+          <p class="form-note">Your login is handled by Supabase Auth. Your dashboard data is protected by database row-level security.</p>
+        </form>
+      </article>
+    </section>
+
+    <section class="dashboard-shell" id="dashboard-shell" hidden>
+      <div class="dashboard-toolbar">
+        <div>
+          <p class="dashboard-kicker">Welcome back</p>
+          <h2 id="profile-name">My dashboard</h2>
+          <p id="profile-focus" class="profile-focus"></p>
+        </div>
+        <div class="dashboard-actions">
+          <button class="button-secondary" id="edit-profile" type="button"><i class="fa-solid fa-pen"></i> Edit profile</button>
+          <button class="button-secondary" id="sign-out" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span><i class="fa-solid fa-book-bible"></i></span>
+          <p>Bible days</p>
+          <strong id="stat-reading">0</strong>
+        </article>
+        <article class="stat-card">
+          <span><i class="fa-solid fa-fire"></i></span>
+          <p>Current streak</p>
+          <strong id="stat-streak">0</strong>
+        </article>
+        <article class="stat-card">
+          <span><i class="fa-solid fa-hands-praying"></i></span>
+          <p>Prayer entries</p>
+          <strong id="stat-prayers">0</strong>
+        </article>
+        <article class="stat-card">
+          <span><i class="fa-solid fa-circle-check"></i></span>
+          <p>Weekly progress</p>
+          <strong id="stat-progress">0%</strong>
+        </article>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="dashboard-card">
+          <div class="card-heading">
+            <div>
+              <p class="dashboard-kicker">Reading plan</p>
+              <h3>7-day Bible journey</h3>
+            </div>
+            <button class="icon-button" id="reset-plan" type="button" aria-label="Reset reading plan"><i class="fa-solid fa-rotate-left"></i></button>
+          </div>
+          <div class="reading-list" id="reading-list"></div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-heading">
+            <div>
+              <p class="dashboard-kicker">Today</p>
+              <h3>Daily devotion</h3>
+            </div>
+            <span class="status-pill" id="devotional-status">Pending</span>
+          </div>
+          <p id="daily-devotional" class="dashboard-copy"></p>
+          <button class="button" id="complete-devotional" type="button">Mark as completed</button>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-heading">
+            <div>
+              <p class="dashboard-kicker">Prayer</p>
+              <h3>Prayer journal</h3>
+            </div>
+          </div>
+          <form id="journal-form" class="journal-form">
+            <textarea id="journal-input" rows="4" required placeholder="Write a prayer focus..."></textarea>
+            <button class="button-secondary" type="submit">Save prayer</button>
+          </form>
+          <div class="journal-list" id="journal-list"></div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-heading">
+            <div>
+              <p class="dashboard-kicker">Quiz prep</p>
+              <h3>Growth challenge</h3>
+            </div>
+          </div>
+          <div class="quiz-preview">
+            <p id="quiz-question">Which book records the fruit of the Spirit?</p>
+            <div class="quiz-options" id="quiz-options"></div>
+            <p class="form-message" id="quiz-message"></p>
+          </div>
+        </article>
+      </div>
+
+      <article class="dashboard-card activity-card">
+        <div class="card-heading">
+          <div>
+            <p class="dashboard-kicker">Activity</p>
+            <h3>Recent growth moments</h3>
+          </div>
+          <button class="icon-button" id="clear-activity" type="button" aria-label="Clear activity"><i class="fa-solid fa-broom"></i></button>
+        </div>
+        <div class="activity-list" id="activity-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Transforming Lives with God's Word</p>
+    <p class="footer-copy">© 2026 Word of Life · Designed by SirFrosh100</p>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

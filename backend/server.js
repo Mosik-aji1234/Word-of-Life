@@ -5,6 +5,8 @@ const http = require('http');
 const path = require('path');
 
 const PORT = Number(process.env.PORT || 3000);
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(__dirname, 'data');
 const SERMONS_FILE = path.join(DATA_DIR, 'sermons.json');
@@ -303,6 +305,15 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (url.pathname === '/api/config' && request.method === 'GET') {
+    sendJson(response, 200, {
+      supabaseUrl: SUPABASE_URL,
+      supabaseAnonKey: SUPABASE_ANON_KEY,
+      supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
+    });
+    return;
+  }
+
   if (url.pathname === '/api/daily-verse' && request.method === 'GET') {
     sendJson(response, 200, getRandomCuratedVerse());
     return;
@@ -408,6 +419,7 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === '/sitemap.xml') {
       const pages = [
         { loc: '/', priority: '1.0' },
+        { loc: '/account.html', priority: '0.9' },
         { loc: '/books.html', priority: '0.8' },
         { loc: '/sermons.html', priority: '0.8' },
         { loc: '/bible.html', priority: '0.7' },
