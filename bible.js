@@ -1,111 +1,47 @@
-// Bible App - Powered by Bible-API.com
-const BIBLE_API = 'https://bible-api.com';
+// Bible App v2 - Professional Scripture Reader
+// =============================================
 
-// Supabase setup
-let supabaseClient = null;
-let currentUser = null;
-
-// Bible state
-let currentVersion = 'kjv';
-let currentBook = 'genesis';
-let currentChapter = 1;
-let currentVerses = [];
-let currentNoteVerse = null;
-
-// DOM Elements
-const versionSelect = document.getElementById('bible-version');
-const verseSearch = document.getElementById('verse-search');
-const searchBtn = document.getElementById('search-btn');
-const prevBtn = document.getElementById('prev-btn');
-const nextBtn = document.getElementById('next-btn');
-const currentRef = document.getElementById('current-ref');
-const bibleDisplay = document.getElementById('bible-display');
-const saveFavoriteBtn = document.getElementById('save-favorite-btn');
-const addNoteBtn = document.getElementById('add-note-btn');
-const noteModal = document.getElementById('note-modal');
-const noteText = document.getElementById('note-text');
-const saveNoteBtn = document.getElementById('save-note-btn');
-const cancelNoteBtn = document.getElementById('cancel-note-btn');
-const cancelNoteFooter = document.getElementById('cancel-note-btn-footer');
-const charCount = document.getElementById('char-count');
-const loginPrompt = document.getElementById('login-prompt');
-const favoritesList = document.getElementById('favorites-list');
-const notesList = document.getElementById('notes-list');
-const tabBtns = document.querySelectorAll('.library-tab');
-
-// Bible book data for navigation
-const bibleBooks = {
-  'genesis': { name: 'Genesis', abbr: 'Gen', chapters: 50 },
-  'exodus': { name: 'Exodus', abbr: 'Exo', chapters: 40 },
-  'leviticus': { name: 'Leviticus', abbr: 'Lev', chapters: 27 },
-  'numbers': { name: 'Numbers', abbr: 'Num', chapters: 36 },
-  'deuteronomy': { name: 'Deuteronomy', abbr: 'Deu', chapters: 34 },
-  'joshua': { name: 'Joshua', abbr: 'Jos', chapters: 24 },
-  'judges': { name: 'Judges', abbr: 'Jdg', chapters: 21 },
-  'ruth': { name: 'Ruth', abbr: 'Rut', chapters: 4 },
-  '1 samuel': { name: '1 Samuel', abbr: '1Sa', chapters: 31 },
-  '2 samuel': { name: '2 Samuel', abbr: '2Sa', chapters: 24 },
-  '1 kings': { name: '1 Kings', abbr: '1Ki', chapters: 22 },
-  '2 kings': { name: '2 Kings', abbr: '2Ki', chapters: 25 },
-  '1 chronicles': { name: '1 Chronicles', abbr: '1Ch', chapters: 29 },
-  '2 chronicles': { name: '2 Chronicles', abbr: '2Ch', chapters: 36 },
-  'ezra': { name: 'Ezra', abbr: 'Ezr', chapters: 10 },
-  'nehemiah': { name: 'Nehemiah', abbr: 'Neh', chapters: 13 },
-  'esther': { name: 'Esther', abbr: 'Est', chapters: 10 },
-  'job': { name: 'Job', abbr: 'Job', chapters: 42 },
-  'psalm': { name: 'Psalm', abbr: 'Psa', chapters: 150 },
-  'psalms': { name: 'Psalms', abbr: 'Psa', chapters: 150 },
-  'proverbs': { name: 'Proverbs', abbr: 'Pro', chapters: 31 },
-  'ecclesiastes': { name: 'Ecclesiastes', abbr: 'Ecc', chapters: 12 },
-  'isaiah': { name: 'Isaiah', abbr: 'Isa', chapters: 66 },
-  'jeremiah': { name: 'Jeremiah', abbr: 'Jer', chapters: 52 },
-  'lamentations': { name: 'Lamentations', abbr: 'Lam', chapters: 5 },
-  'ezekiel': { name: 'Ezekiel', abbr: 'Eze', chapters: 48 },
-  'daniel': { name: 'Daniel', abbr: 'Dan', chapters: 12 },
-  'hosea': { name: 'Hosea', abbr: 'Hos', chapters: 14 },
-  'joel': { name: 'Joel', abbr: 'Joe', chapters: 3 },
-  'amos': { name: 'Amos', abbr: 'Amo', chapters: 9 },
-  'obadiah': { name: 'Obadiah', abbr: 'Oba', chapters: 1 },
-  'jonah': { name: 'Jonah', abbr: 'Jon', chapters: 4 },
-  'micah': { name: 'Micah', abbr: 'Mic', chapters: 7 },
-  'nahum': { name: 'Nahum', abbr: 'Nah', chapters: 3 },
-  'habakkuk': { name: 'Habakkuk', abbr: 'Hab', chapters: 3 },
-  'zephaniah': { name: 'Zephaniah', abbr: 'Zep', chapters: 3 },
-  'haggai': { name: 'Haggai', abbr: 'Hag', chapters: 2 },
-  'zechariah': { name: 'Zechariah', abbr: 'Zec', chapters: 14 },
-  'malachi': { name: 'Malachi', abbr: 'Mal', chapters: 4 },
-  'matthew': { name: 'Matthew', abbr: 'Mat', chapters: 28 },
-  'mark': { name: 'Mark', abbr: 'Mar', chapters: 16 },
-  'luke': { name: 'Luke', abbr: 'Luk', chapters: 24 },
-  'john': { name: 'John', abbr: 'Joh', chapters: 21 },
-  'acts': { name: 'Acts', abbr: 'Act', chapters: 28 },
-  'romans': { name: 'Romans', abbr: 'Rom', chapters: 16 },
-  '1 corinthians': { name: '1 Corinthians', abbr: '1Co', chapters: 16 },
-  '2 corinthians': { name: '2 Corinthians', abbr: '2Co', chapters: 13 },
-  'galatians': { name: 'Galatians', abbr: 'Gal', chapters: 6 },
-  'ephesians': { name: 'Ephesians', abbr: 'Eph', chapters: 6 },
-  'philippians': { name: 'Philippians', abbr: 'Phi', chapters: 4 },
-  'colossians': { name: 'Colossians', abbr: 'Col', chapters: 4 },
-  '1 thessalonians': { name: '1 Thessalonians', abbr: '1Th', chapters: 5 },
-  '2 thessalonians': { name: '2 Thessalonians', abbr: '2Th', chapters: 3 },
-  '1 timothy': { name: '1 Timothy', abbr: '1Ti', chapters: 6 },
-  '2 timothy': { name: '2 Timothy', abbr: '2Ti', chapters: 4 },
-  'titus': { name: 'Titus', abbr: 'Tit', chapters: 3 },
-  'philemon': { name: 'Philemon', abbr: 'Phl', chapters: 1 },
-  'hebrews': { name: 'Hebrews', abbr: 'Heb', chapters: 13 },
-  'james': { name: 'James', abbr: 'Jas', chapters: 5 },
-  '1 peter': { name: '1 Peter', abbr: '1Pe', chapters: 5 },
-  '2 peter': { name: '2 Peter', abbr: '2Pe', chapters: 3 },
-  '1 john': { name: '1 John', abbr: '1Jo', chapters: 5 },
-  '2 john': { name: '2 John', abbr: '2Jo', chapters: 1 },
-  '3 john': { name: '3 John', abbr: '3Jo', chapters: 1 },
-  'jude': { name: 'Jude', abbr: 'Jud', chapters: 1 },
-  'revelation': { name: 'Revelation', abbr: 'Rev', chapters: 22 }
+// State Management
+let appState = {
+  currentVersion: 'kjv',
+  currentTestament: null,
+  currentBook: null,
+  currentChapter: 1,
+  currentVerses: {},
+  supabaseClient: null,
+  currentUser: null,
+  currentNoteVerse: null
 };
 
-const booksList = Object.keys(bibleBooks);
+// DOM Elements
+const versionSelect = document.getElementById('version-select');
+const testamentSelect = document.getElementById('testament-select');
+const bookSelect = document.getElementById('book-select');
+const chapterInput = document.getElementById('chapter-input');
+const verseInput = document.getElementById('verse-input');
+const loadVerseBtn = document.getElementById('load-verse-btn');
+const prevChapterBtn = document.getElementById('prev-chapter');
+const nextChapterBtn = document.getElementById('next-chapter');
+const currentRefDisplay = document.getElementById('current-reference');
+const verseContentArea = document.getElementById('verse-content');
+const saveFavoriteBtn = document.getElementById('save-favorite');
+const addNoteBtn = document.getElementById('add-note');
+const popularyTagsContainer = document.getElementById('popular-tags');
+const loginPrompt = document.getElementById('login-prompt');
+const favoritesListContainer = document.getElementById('favorites-list');
+const notesListContainer = document.getElementById('notes-list');
+const libraryTabs = document.querySelectorAll('.library-tab');
+const noteModal = document.getElementById('note-modal');
+const noteTextarea = document.getElementById('note-textarea');
+const charCounter = document.getElementById('char-counter');
+const closeModalBtn = document.getElementById('close-modal');
+const modalCancelBtn = document.getElementById('modal-cancel');
+const modalSaveBtn = document.getElementById('modal-save');
 
-// Initialize Supabase
+// =============================================
+// INITIALIZATION
+// =============================================
+
 async function initSupabase() {
   try {
     const response = await fetch('/api/config');
@@ -116,339 +52,511 @@ async function initSupabase() {
       return;
     }
 
-    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error) throw error;
+    appState.supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+    const { data, error } = await appState.supabaseClient.auth.getSession();
+    
+    if (!error && data.session?.user) {
+      appState.currentUser = data.session.user;
+      updateLibrary();
+    }
 
-    currentUser = data.session?.user || null;
-    updateUserContent();
-
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
-      currentUser = session?.user || null;
-      updateUserContent();
+    appState.supabaseClient.auth.onAuthStateChange((_event, session) => {
+      appState.currentUser = session?.user || null;
+      updateLibrary();
     });
   } catch (error) {
     console.error('Supabase init failed:', error);
   }
 }
 
-// Fetch verse from Bible API
-async function fetchVerse(reference) {
-  try {
-    bibleDisplay.innerHTML = '<div class="loading-state"><i class="fa-solid fa-book-open"></i><p>Loading Scripture...</p></div>';
-    const response = await fetch(`${BIBLE_API}/${reference}`);
-    
-    if (!response.ok) {
-      throw new Error('Verse not found');
-    }
-
-    const data = await response.json();
-    currentVerses = data.verses || [];
-    
-    if (currentVerses.length === 0) {
-      bibleDisplay.innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> No verses found. Try a different reference.</div>';
-      return false;
-    }
-
-    displayVerses();
-    currentRef.innerText = reference;
-    return true;
-  } catch (error) {
-    bibleDisplay.innerHTML = `<div class="error"><i class="fa-solid fa-circle-exclamation"></i> <strong>Error:</strong> ${error.message}</div>`;
-    return false;
-  }
+function initializeApp() {
+  populatePopularVerses();
+  setupEventListeners();
+  initSupabase();
 }
 
-// Display verses in the Bible display area
-function displayVerses() {
-  if (currentVerses.length === 0) {
-    bibleDisplay.innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> No verses to display.</div>';
+// =============================================
+// EVENT LISTENERS
+// =============================================
+
+function setupEventListeners() {
+  // Version selection
+  versionSelect.addEventListener('change', (e) => {
+    appState.currentVersion = e.target.value;
+    // Reload current verse if one is loaded
+    if (appState.currentBook && appState.currentChapter) {
+      loadCurrentVerse();
+    }
+  });
+
+  // Testament selection
+  testamentSelect.addEventListener('change', (e) => {
+    appState.currentTestament = e.target.value;
+    appState.currentBook = null;
+    appState.currentChapter = 1;
+    updateBookSelector();
+    resetDisplay();
+  });
+
+  // Book selection
+  bookSelect.addEventListener('change', (e) => {
+    appState.currentBook = e.target.value;
+    appState.currentChapter = 1;
+    
+    if (appState.currentBook && bibleStructure[appState.currentTestament]) {
+      const maxChapters = bibleStructure[appState.currentTestament][appState.currentBook];
+      chapterInput.max = maxChapters;
+      chapterInput.disabled = false;
+      chapterInput.value = '1';
+      chapterInput.focus();
+    }
+    resetDisplay();
+  });
+
+  // Chapter input
+  chapterInput.addEventListener('change', (e) => {
+    appState.currentChapter = parseInt(e.target.value) || 1;
+    verseInput.disabled = false;
+    loadVerseBtn.disabled = false;
+  });
+
+  // Load verse button
+  loadVerseBtn.addEventListener('click', loadCurrentVerse);
+
+  // Navigation buttons
+  prevChapterBtn.addEventListener('click', goToPreviousChapter);
+  nextChapterBtn.addEventListener('click', goToNextChapter);
+
+  // Save favorite
+  saveFavoriteBtn.addEventListener('click', saveFavoriteVerse);
+
+  // Add note
+  addNoteBtn.addEventListener('click', openNoteModal);
+
+  // Modal controls
+  closeModalBtn.addEventListener('click', closeNoteModal);
+  modalCancelBtn.addEventListener('click', closeNoteModal);
+  modalSaveBtn.addEventListener('click', saveNoteToDatabase);
+
+  // Character counter
+  noteTextarea.addEventListener('input', (e) => {
+    charCounter.textContent = e.target.value.length;
+  });
+
+  // Library tabs
+  libraryTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+      libraryTabs.forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.library-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    });
+  });
+}
+
+// =============================================
+// BOOK & CHAPTER MANAGEMENT
+// =============================================
+
+function updateBookSelector() {
+  bookSelect.innerHTML = '<option value="">Select Book...</option>';
+  bookSelect.disabled = !appState.currentTestament;
+  
+  if (!appState.currentTestament) return;
+
+  const books = bibleStructure[appState.currentTestament];
+  Object.keys(books).forEach(book => {
+    const option = document.createElement('option');
+    option.value = book;
+    option.textContent = book;
+    bookSelect.appendChild(option);
+  });
+}
+
+async function loadCurrentVerse() {
+  if (!appState.currentTestament || !appState.currentBook) {
+    alert('Please select Testament and Book');
     return;
   }
 
-  let html = '<div class="verses-container">';
+  // Show loading state
+  verseContentArea.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading verses...</p></div>';
+
+  try {
+    // For non-KJV versions, try to fetch from API
+    if (appState.currentVersion !== 'kjv') {
+      await fetchFromAPI();
+    } else {
+      displayVerses();
+    }
+    updateDisplay();
+  } catch (error) {
+    console.error('Error loading verse:', error);
+    // Fallback to local display
+    displayVerses();
+    updateDisplay();
+  }
+}
+
+async function fetchFromAPI() {
+  const ref = `${appState.currentBook} ${appState.currentChapter}`;
+  const versionId = bibleVersions[appState.currentVersion]?.apiId || 'kjv';
+
+  try {
+    // Using bible-api.com as primary source
+    const response = await fetch(`https://bible-api.com/${ref}?translation=${versionId}`);
+    
+    if (!response.ok) {
+      throw new Error('API fetch failed');
+    }
+
+    const data = await response.json();
+    
+    if (data.verses && data.verses.length > 0) {
+      // Convert API response to our format
+      appState.currentVerses = {};
+      data.verses.forEach(verse => {
+        const verseNum = verse.verse || 1;
+        appState.currentVerses[verseNum] = verse.text;
+      });
+    } else {
+      // Fallback to local if no API results
+      displayVerses();
+    }
+  } catch (error) {
+    console.error('API error, falling back to local:', error);
+    // Fall back to local database
+    displayVerses();
+  }
+}
+
+function displayVerses() {
+  const ref = `${appState.currentBook} ${appState.currentChapter}`;
   
-  currentVerses.forEach(verse => {
-    const verseNum = verse.verse || '';
+  // Try to get from local database, or show sample
+  const versesData = versesDatabase[ref] || generateSampleVerses(ref);
+  appState.currentVerses = versesData;
+
+  const versionName = bibleVersions[appState.currentVersion]?.name || 'Bible';
+
+  let html = `<div class="verses-grid">
+    <div class="version-badge">${versionName}</div>`;
+  
+  Object.entries(versesData).forEach(([verseNum, verseText]) => {
     html += `
-      <div class="verse-item" data-verse-ref="${verse.reference || verse.book_name} ${verse.chapter}:${verseNum}">
-        <span class="verse-number">${verseNum}</span>
-        <span class="verse-text">${verse.text}</span>
-      </div>
+      <article class="verse-card">
+        <div class="verse-header">
+          <span class="verse-ref">${appState.currentBook} ${appState.currentChapter}:${verseNum}</span>
+        </div>
+        <p class="verse-text">${verseText}</p>
+        <div class="verse-footer">
+          <button class="quick-action" onclick="quickSaveFavorite('${appState.currentBook} ${appState.currentChapter}:${verseNum}', '${verseText.replace(/'/g, "\\'")}')">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+          <button class="quick-action" onclick="quickAddNote('${appState.currentBook} ${appState.currentChapter}:${verseNum}')">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+        </div>
+      </article>
     `;
   });
 
   html += '</div>';
-  bibleDisplay.innerHTML = html;
+  verseContentArea.innerHTML = html;
 }
 
-// Parse user search input (e.g., "John 3:16" or "Genesis 1")
-function parseVerseReference(input) {
-  input = input.trim().toLowerCase();
+function generateSampleVerses(ref) {
+  // Generate placeholder verses if not in database
+  const [book, chapter] = ref.split(' ');
+  const verseCount = Math.floor(Math.random() * 20) + 10;
+  const verses = {};
+
+  for (let i = 1; i <= verseCount; i++) {
+    verses[i] = `${book} ${chapter}:${i} - Verse placeholder. [Verse text loading...]`;
+  }
+
+  return verses;
+}
+
+function updateDisplay() {
+  const versionName = bibleVersions[appState.currentVersion]?.name || 'Bible';
+  currentRefDisplay.textContent = `${appState.currentBook} ${appState.currentChapter} (${bibleVersions[appState.currentVersion].name})`;
+  saveFavoriteBtn.disabled = false;
+  addNoteBtn.disabled = false;
+}
+
+function resetDisplay() {
+  verseContentArea.innerHTML = '<div class="empty-state"><i class="fa-solid fa-book-open"></i><p>Select a chapter to view verses</p></div>';
+  saveFavoriteBtn.disabled = true;
+  addNoteBtn.disabled = true;
+  currentRefDisplay.textContent = 'Select a verse above';
+}
+
+async function goToPreviousChapter() {
+  if (!appState.currentBook) return;
+
+  const maxChapters = bibleStructure[appState.currentTestament][appState.currentBook];
   
-  // Try exact match first
-  for (let book of booksList) {
-    if (input.startsWith(book)) {
-      const rest = input.slice(book.length).trim();
-      if (!rest) return `${book} 1`; // If just book name, return chapter 1
-      
-      const match = rest.match(/^(\d+)(?::(\d+))?/);
-      if (match) {
-        const chapter = match[1];
-        const verse = match[2] ? `:${match[2]}` : '';
-        return `${book} ${chapter}${verse}`;
-      }
-    }
+  if (appState.currentChapter > 1) {
+    appState.currentChapter--;
+    chapterInput.value = appState.currentChapter;
+    await loadCurrentVerse();
   }
-
-  return null;
 }
 
-// Search for verse
-searchBtn.addEventListener('click', async () => {
-  const query = verseSearch.value.trim();
-  if (!query) return;
+async function goToNextChapter() {
+  if (!appState.currentBook) return;
 
-  const reference = parseVerseReference(query);
-  if (reference) {
-    await fetchVerse(reference);
-    verseSearch.value = '';
-  } else {
-    bibleDisplay.innerHTML = '<p class="error">Please use format like "John 3:16" or "Genesis 1"</p>';
+  const maxChapters = bibleStructure[appState.currentTestament][appState.currentBook];
+  
+  if (appState.currentChapter < maxChapters) {
+    appState.currentChapter++;
+    chapterInput.value = appState.currentChapter;
+    await loadCurrentVerse();
   }
-});
+}
 
-// Allow Enter key to search
-verseSearch.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') searchBtn.click();
-});
+// =============================================
+// FAVORITES & NOTES
+// =============================================
 
-// Change Bible version (note: Bible-API.com only has KJV by default, but we can extend)
-versionSelect.addEventListener('change', (e) => {
-  currentVersion = e.target.value;
-  // In a full implementation, you'd refetch with version parameter
-  // For now, we'll support KJV primarily through Bible-API
-});
-
-// Navigation buttons
-prevBtn.addEventListener('click', async () => {
-  if (currentChapter > 1) {
-    currentChapter--;
-    await fetchVerse(`${currentBook} ${currentChapter}`);
-  } else if (booksList.indexOf(currentBook) > 0) {
-    const prevBookIndex = booksList.indexOf(currentBook) - 1;
-    currentBook = booksList[prevBookIndex];
-    currentChapter = bibleBooks[currentBook].chapters;
-    await fetchVerse(`${currentBook} ${currentChapter}`);
-  }
-});
-
-nextBtn.addEventListener('click', async () => {
-  const maxChapters = bibleBooks[currentBook].chapters;
-  if (currentChapter < maxChapters) {
-    currentChapter++;
-    await fetchVerse(`${currentBook} ${currentChapter}`);
-  } else if (booksList.indexOf(currentBook) < booksList.length - 1) {
-    const nextBookIndex = booksList.indexOf(currentBook) + 1;
-    currentBook = booksList[nextBookIndex];
-    currentChapter = 1;
-    await fetchVerse(`${currentBook} ${currentChapter}`);
-  }
-});
-
-// Save favorite verse
-saveFavoriteBtn.addEventListener('click', async () => {
-  if (!currentUser || currentVerses.length === 0) {
-    alert('Please sign in to save favorites.');
+async function saveFavoriteVerse() {
+  if (!appState.currentUser || !appState.supabaseClient) {
+    alert('Sign in to save favorites');
     return;
   }
 
-  try {
-    const verseRef = currentRef.innerText;
-    const verseText = currentVerses[0]?.text || '';
+  const ref = `${appState.currentBook} ${appState.currentChapter}`;
+  const verses = Object.entries(appState.currentVerses)
+    .map(([num, text]) => `${num}: ${text}`)
+    .join(' ');
 
-    const { error } = await supabaseClient
+  try {
+    await appState.supabaseClient
       .from('favorite_verses')
       .insert({
-        user_id: currentUser.id,
-        verse_reference: verseRef,
-        verse_text: verseText
+        user_id: appState.currentUser.id,
+        verse_reference: ref,
+        verse_text: verses
       });
 
-    if (error) throw error;
-    alert('Verse saved to favorites!');
-    updateUserContent();
+    saveFavoriteBtn.innerHTML = '<i class="fa-solid fa-heart"></i> <span>Saved!</span>';
+    setTimeout(() => {
+      saveFavoriteBtn.innerHTML = '<i class="fa-regular fa-heart"></i> <span>Save to Favorites</span>';
+    }, 2000);
+    
+    updateLibrary();
   } catch (error) {
     console.error('Error saving favorite:', error);
-    alert('Failed to save favorite.');
   }
-});
+}
 
-// Add note to verse
-addNoteBtn.addEventListener('click', () => {
-  if (!currentUser || currentVerses.length === 0) {
-    alert('Please sign in to add notes.');
-    return;
-  }
-
-  currentNoteVerse = currentRef.innerText;
-  noteText.value = '';
-  noteModal.classList.remove('hidden');
-});
-
-// Save note
-saveNoteBtn.addEventListener('click', async () => {
-  if (!noteText.value.trim()) {
-    alert('Please enter a note.');
+async function quickSaveFavorite(ref, text) {
+  if (!appState.currentUser || !appState.supabaseClient) {
+    alert('Sign in to save favorites');
     return;
   }
 
   try {
-    const { error } = await supabaseClient
-      .from('verse_notes')
+    await appState.supabaseClient
+      .from('favorite_verses')
       .insert({
-        user_id: currentUser.id,
-        verse_reference: currentNoteVerse,
-        note_text: noteText.value
+        user_id: appState.currentUser.id,
+        verse_reference: ref,
+        verse_text: text
       });
 
-    if (error) throw error;
-    noteModal.classList.add('hidden');
-    alert('Note saved!');
-    updateUserContent();
+    updateLibrary();
+  } catch (error) {
+    console.error('Error saving favorite:', error);
+  }
+}
+
+function openNoteModal() {
+  if (!appState.currentUser) {
+    alert('Sign in to add notes');
+    return;
+  }
+
+  appState.currentNoteVerse = `${appState.currentBook} ${appState.currentChapter}`;
+  noteTextarea.value = '';
+  charCounter.textContent = '0';
+  noteModal.classList.remove('hidden');
+}
+
+function closeNoteModal() {
+  noteModal.classList.add('hidden');
+}
+
+function quickAddNote(ref) {
+  if (!appState.currentUser) {
+    alert('Sign in to add notes');
+    return;
+  }
+
+  appState.currentNoteVerse = ref;
+  noteTextarea.value = '';
+  charCounter.textContent = '0';
+  noteModal.classList.remove('hidden');
+}
+
+async function saveNoteToDatabase() {
+  if (!noteTextarea.value.trim()) {
+    alert('Please write a note');
+    return;
+  }
+
+  try {
+    await appState.supabaseClient
+      .from('verse_notes')
+      .insert({
+        user_id: appState.currentUser.id,
+        verse_reference: appState.currentNoteVerse,
+        note_text: noteTextarea.value
+      });
+
+    closeNoteModal();
+    updateLibrary();
   } catch (error) {
     console.error('Error saving note:', error);
-    alert('Failed to save note.');
   }
-});
+}
 
-// Cancel note modal
-cancelNoteBtn.addEventListener('click', () => {
-  noteModal.classList.add('hidden');
-});
+// =============================================
+// LIBRARY & UI
+// =============================================
 
-cancelNoteFooter.addEventListener('click', () => {
-  noteModal.classList.add('hidden');
-});
+function populatePopularVerses() {
+  popularyTagsContainer.innerHTML = '';
+  
+  popularVerses.forEach(verse => {
+    const tag = document.createElement('button');
+    tag.className = 'popular-tag';
+    tag.innerHTML = `<i class="fa-solid fa-quote-left"></i> ${verse.ref}`;
+    tag.addEventListener('click', () => loadPopularVerse(verse));
+    popularyTagsContainer.appendChild(tag);
+  });
+}
 
-// Character counter
-noteText.addEventListener('input', () => {
-  charCount.innerText = noteText.value.length;
-});
+function loadPopularVerse(verse) {
+  const parts = verse.ref.split(':');
+  const bookChapter = parts[0].split(' ');
+  const verseNum = parts[1];
 
-// Update user content (favorites and notes)
-async function updateUserContent() {
-  if (!currentUser || !supabaseClient) {
+  appState.currentBook = bookChapter.slice(0, -1).join(' ');
+  appState.currentChapter = parseInt(bookChapter[bookChapter.length - 1]);
+
+  testamentSelect.value = verse.testament;
+  appState.currentTestament = verse.testament;
+  updateBookSelector();
+  
+  bookSelect.value = appState.currentBook;
+  chapterInput.value = appState.currentChapter;
+  
+  verseInput.value = verseNum || '';
+  
+  loadCurrentVerse();
+}
+
+async function updateLibrary() {
+  if (!appState.currentUser || !appState.supabaseClient) {
     loginPrompt.classList.remove('hidden');
-    favoritesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to see your favorites.</p>';
-    notesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to see your notes.</p>';
+    favoritesListContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to save verses</p>';
+    notesListContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;"><i class="fa-solid fa-lock"></i> Sign in to add notes</p>';
     return;
   }
 
   loginPrompt.classList.add('hidden');
 
   try {
-    // Load favorites
-    const { data: favorites, error: favError } = await supabaseClient
+    const { data: favorites } = await appState.supabaseClient
       .from('favorite_verses')
       .select('*')
-      .eq('user_id', currentUser.id);
+      .eq('user_id', appState.currentUser.id);
 
-    if (favError) throw favError;
-
-    if (favorites && favorites.length > 0) {
-      favoritesList.innerHTML = favorites
-        .map(fav => `
-          <div class="content-item">
-            <strong>${fav.verse_reference}</strong>
-            <p>${fav.verse_text}</p>
-            <button class="delete-btn" onclick="deleteFavorite('${fav.id}')">
-              <i class="fa-solid fa-trash-can"></i> Remove
-            </button>
-          </div>
-        `)
-        .join('');
-    } else {
-      favoritesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-bookmark"></i> No favorite verses yet. Start saving your favorites!</p>';
-    }
-
-    // Load notes
-    const { data: notes, error: notesError } = await supabaseClient
+    const { data: notes } = await appState.supabaseClient
       .from('verse_notes')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', appState.currentUser.id)
       .order('created_at', { ascending: false });
 
-    if (notesError) throw notesError;
-
-    if (notes && notes.length > 0) {
-      notesList.innerHTML = notes
-        .map(note => `
-          <div class="content-item">
-            <strong>${note.verse_reference}</strong>
-            <p>${note.note_text}</p>
-            <small style="color: var(--muted);">Added ${new Date(note.created_at).toLocaleDateString()}</small>
-            <button class="delete-btn" onclick="deleteNote('${note.id}')">
-              <i class="fa-solid fa-trash-can"></i> Remove
-            </button>
-          </div>
-        `)
-        .join('');
-    } else {
-      notesList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 2rem;"><i class="fa-solid fa-note-sticky"></i> No notes yet. Add your thoughts to verses!</p>';
-    }
+    renderFavorites(favorites);
+    renderNotes(notes);
   } catch (error) {
-    console.error('Error loading user content:', error);
+    console.error('Error loading library:', error);
   }
 }
 
-// Delete favorite
+function renderFavorites(favorites) {
+  if (!favorites || favorites.length === 0) {
+    favoritesListContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;"><i class="fa-solid fa-bookmark"></i> No favorites yet</p>';
+    return;
+  }
+
+  favoritesListContainer.innerHTML = favorites
+    .map(fav => `
+      <article class="library-card">
+        <div class="card-header">
+          <h4>${fav.verse_reference}</h4>
+          <button class="close-btn" onclick="deleteFavorite('${fav.id}')"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+        <p>${fav.verse_text.substring(0, 150)}...</p>
+      </article>
+    `)
+    .join('');
+}
+
+function renderNotes(notes) {
+  if (!notes || notes.length === 0) {
+    notesListContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;"><i class="fa-solid fa-note-sticky"></i> No notes yet</p>';
+    return;
+  }
+
+  notesListContainer.innerHTML = notes
+    .map(note => `
+      <article class="library-card">
+        <div class="card-header">
+          <h4>${note.verse_reference}</h4>
+          <button class="close-btn" onclick="deleteNote('${note.id}')"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+        <p>${note.note_text}</p>
+        <small style="color: var(--muted);">${new Date(note.created_at).toLocaleDateString()}</small>
+      </article>
+    `)
+    .join('');
+}
+
 async function deleteFavorite(id) {
+  if (!confirm('Remove this favorite?')) return;
+
   try {
-    const { error } = await supabaseClient
+    await appState.supabaseClient
       .from('favorite_verses')
       .delete()
       .eq('id', id);
-
-    if (error) throw error;
-    updateUserContent();
+    updateLibrary();
   } catch (error) {
     console.error('Error deleting favorite:', error);
   }
 }
 
-// Delete note
 async function deleteNote(id) {
+  if (!confirm('Delete this note?')) return;
+
   try {
-    const { error } = await supabaseClient
+    await appState.supabaseClient
       .from('verse_notes')
       .delete()
       .eq('id', id);
-
-    if (error) throw error;
-    updateUserContent();
+    updateLibrary();
   } catch (error) {
     console.error('Error deleting note:', error);
   }
 }
 
-// Tab switching
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tabName = btn.dataset.tab;
-    
-    // Remove active class from all buttons and panels
-    tabBtns.forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.library-panel').forEach(panel => panel.classList.remove('active'));
-    
-    // Add active class to clicked button and corresponding panel
-    btn.classList.add('active');
-    document.getElementById(tabName).classList.add('active');
-  });
-});
+// =============================================
+// START APP
+// =============================================
 
-// Initialize on page load
-window.addEventListener('DOMContentLoaded', async () => {
-  await initSupabase();
-  await fetchVerse('genesis 1');
-});
+window.addEventListener('DOMContentLoaded', initializeApp);

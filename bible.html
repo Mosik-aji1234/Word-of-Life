@@ -41,114 +41,151 @@
       </article>
     </section>
 
-    <!-- Bible App Interface -->
-    <section class="bible-app-container">
-      <!-- Search & Controls Bar -->
-      <div class="bible-header">
-        <div class="bible-search-box">
-          <input type="text" id="verse-search" placeholder="Search: John 3:16 or Genesis 1" autocomplete="off">
-          <button id="search-btn" class="search-btn" title="Search verse">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
+    <!-- Bible Reader App -->
+    <section class="bible-hero">
+      <article class="hero-card">
+        <h1>Read & Study Scripture</h1>
+        <p>Search the King James Version Bible by testament, book, chapter, and verse. Save favorites and add personal notes.</p>
+      </article>
+    </section>
+
+    <!-- Segmented Bible Search -->
+    <section class="bible-search-section">
+      <div class="search-controls">
+        <!-- Version Selector -->
+        <div class="control-segment">
+          <label for="version-select"><i class="fa-solid fa-book"></i> Version</label>
+          <select id="version-select">
+            <option value="kjv">King James Version</option>
+            <option value="nkjv">New King James Version</option>
+            <option value="asv">American Standard</option>
+            <option value="web">World English Bible</option>
+            <option value="ylt">Young's Literal</option>
+          </select>
         </div>
 
-        <div class="bible-controls-right">
-          <div class="version-selector">
-            <label for="bible-version"><i class="fa-solid fa-book"></i></label>
-            <select id="bible-version" title="Select Bible version">
-              <option value="kjv">King James Version</option>
-              <option value="web">World English Bible</option>
-              <option value="asv">American Standard</option>
-            </select>
-          </div>
+        <!-- Testament Selector -->
+        <div class="control-segment">
+          <label for="testament-select"><i class="fa-solid fa-book-bookmark"></i> Testament</label>
+          <select id="testament-select">
+            <option value="">Select Testament...</option>
+            <option value="Old Testament">Old Testament</option>
+            <option value="New Testament">New Testament</option>
+          </select>
         </div>
-      </div>
 
-      <!-- Navigation Bar -->
-      <div class="bible-nav-bar">
-        <button id="prev-btn" class="nav-btn" title="Previous chapter">
-          <i class="fa-solid fa-chevron-left"></i> Previous
+        <!-- Book Selector -->
+        <div class="control-segment">
+          <label for="book-select"><i class="fa-solid fa-bookmark"></i> Book</label>
+          <select id="book-select" disabled>
+            <option value="">Select Book...</option>
+          </select>
+        </div>
+
+        <!-- Chapter Selector -->
+        <div class="control-segment">
+          <label for="chapter-input"><i class="fa-solid fa-list-ol"></i> Chapter</label>
+          <input type="number" id="chapter-input" min="1" max="150" placeholder="Ch." disabled>
+        </div>
+
+        <!-- Verse Input (Optional) -->
+        <div class="control-segment">
+          <label for="verse-input"><i class="fa-solid fa-quote-left"></i> Verse (Optional)</label>
+          <input type="number" id="verse-input" min="1" placeholder="V." disabled>
+        </div>
+
+        <!-- Load Button -->
+        <button id="load-verse-btn" class="load-btn" disabled title="Load this verse">
+          <i class="fa-solid fa-arrow-right"></i>
         </button>
-        <div class="current-chapter-info">
-          <span id="current-ref" class="current-ref">Genesis 1</span>
-        </div>
-        <button id="next-btn" class="nav-btn" title="Next chapter">
-          Next <i class="fa-solid fa-chevron-right"></i>
+      </div>
+    </section>
+
+    <!-- Popular Verses Quick Links -->
+    <section class="popular-verses-section">
+      <h3>Popular Passages</h3>
+      <div class="popular-tags" id="popular-tags"></div>
+    </section>
+
+    <!-- Verse Display Area -->
+    <section class="verse-reader-section">
+      <div class="reader-toolbar">
+        <button id="prev-chapter" class="toolbar-btn" title="Previous chapter">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span id="current-reference" class="current-reference">Select a verse above</span>
+        <button id="next-chapter" class="toolbar-btn" title="Next chapter">
+          <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>
 
-      <!-- Main Verse Display -->
-      <div class="bible-reader">
-        <div id="bible-display" class="verse-display">
-          <div class="loading-state">
-            <i class="fa-solid fa-book-open"></i>
-            <p>Loading Scripture...</p>
-          </div>
+      <div id="verse-content" class="verse-content">
+        <div class="empty-state">
+          <i class="fa-solid fa-book-open"></i>
+          <p>Select a testament, book, and chapter to begin reading Scripture</p>
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="bible-actions-bar">
-        <button id="save-favorite-btn" class="action-btn favorite-btn" title="Save to favorites">
+      <div class="reader-actions">
+        <button id="save-favorite" class="action-btn primary-btn" disabled>
           <i class="fa-regular fa-heart"></i>
           <span>Save to Favorites</span>
         </button>
-        <button id="add-note-btn" class="action-btn note-btn" title="Add a personal note">
+        <button id="add-note" class="action-btn secondary-btn" disabled>
           <i class="fa-solid fa-pen-to-square"></i>
           <span>Add Note</span>
         </button>
       </div>
-
-      <!-- Note Modal -->
-      <div id="note-modal" class="modal-overlay hidden">
-        <div class="modal-dialog">
-          <div class="modal-header">
-            <h3>Add Personal Note</h3>
-            <button class="modal-close" id="cancel-note-btn" aria-label="Close">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <textarea id="note-text" placeholder="Write your reflection or note about this verse..." maxlength="500"></textarea>
-            <div class="char-count"><span id="char-count">0</span>/500</div>
-          </div>
-          <div class="modal-footer">
-            <button id="cancel-note-btn-footer" class="btn-secondary">Cancel</button>
-            <button id="save-note-btn" class="btn-primary">Save Note</button>
-          </div>
-        </div>
-      </div>
     </section>
 
-    <section class="bible-library">
+    <!-- User Library - Favorites & Notes -->
+    <section class="user-library">
       <div class="library-header">
-        <h2>Your Scripture Library</h2>
+        <h2>
+          <i class="fa-solid fa-heart"></i> Your Library
+        </h2>
         <p id="login-prompt" class="login-prompt hidden">
-          <i class="fa-solid fa-user"></i>
+          <i class="fa-solid fa-user-circle"></i>
           <a href="account.html">Sign in to save verses and notes</a>
         </p>
       </div>
 
-      <div class="library-tabs">
+      <div class="library-nav">
         <button class="library-tab active" data-tab="favorites">
-          <i class="fa-solid fa-bookmark"></i>
-          Favorite Verses
+          <i class="fa-solid fa-bookmark"></i> Favorite Verses
         </button>
         <button class="library-tab" data-tab="notes">
-          <i class="fa-solid fa-note-sticky"></i>
-          My Notes
+          <i class="fa-solid fa-note-sticky"></i> My Notes
         </button>
       </div>
 
-      <div class="library-content">
-        <div id="favorites" class="library-panel active">
-          <div id="favorites-list" class="verse-list"></div>
-        </div>
-        <div id="notes" class="library-panel">
-          <div id="notes-list" class="verse-list"></div>
-        </div>
+      <div id="favorites" class="library-panel active">
+        <div id="favorites-list" class="verses-grid"></div>
+      </div>
+      <div id="notes" class="library-panel">
+        <div id="notes-list" class="verses-grid"></div>
       </div>
     </section>
+
+    <!-- Note Modal -->
+    <div id="note-modal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Add Personal Note</h3>
+          <button class="modal-close" id="close-modal" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <textarea id="note-textarea" placeholder="Write your thoughts and reflections..." maxlength="500"></textarea>
+          <div class="char-count"><span id="char-counter">0</span>/500</div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel" class="btn-secondary">Cancel</button>
+          <button id="modal-save" class="btn-primary">Save Note</button>
+        </div>
+      </div>
+    </div>
 
     <section class="books-overview">
       <div class="section-head">
@@ -195,6 +232,7 @@
 
   <script src="nav.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="bible-data.js"></script>
   <script src="bible.js"></script>
 </body>
 </html>
