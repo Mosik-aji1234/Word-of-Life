@@ -11,6 +11,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(__dirname, 'data');
 const SERMONS_FILE = path.join(DATA_DIR, 'sermons.json');
 const COUNSELING_REQUESTS_FILE = path.join(DATA_DIR, 'counseling-requests.json');
+const BIBLE_API_TRANSLATIONS = new Set(['kjv', 'web', 'asv', 'ylt']);
 
 const CURATED_VERSES = [
   // Faith
@@ -209,6 +210,43 @@ async function searchPodcastSermons(query) {
     }));
 }
 
+async function fetchBiblePassage(reference, translation) {
+  const cleanReference = cleanText(reference);
+  const cleanTranslation = cleanText(translation).toLowerCase() || 'kjv';
+
+  if (!cleanReference) {
+    throw new Error('Bible reference is required');
+  }
+
+  if (!BIBLE_API_TRANSLATIONS.has(cleanTranslation)) {
+    throw new Error(`Unsupported Bible translation: ${cleanTranslation}`);
+  }
+
+  const params = new URLSearchParams({ translation: cleanTranslation });
+  const apiUrl = `https://bible-api.com/${encodeURIComponent(cleanReference)}?${params}`;
+  const response = await fetch(apiUrl, { headers: { Accept: 'application/json' } });
+
+  if (!response.ok) {
+    throw new Error(`Bible API returned ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (!Array.isArray(data.verses) || !data.verses.length) {
+    throw new Error('No verses were found for that reference');
+  }
+
+  return {
+    reference: data.reference || cleanReference,
+    translation: cleanTranslation,
+    verses: data.verses.map(verse => ({
+      book: verse.book_name,
+      chapter: verse.chapter,
+      verse: verse.verse,
+      text: cleanText(verse.text).replace(/\s+/g, ' ')
+    }))
+  };
+}
+
 async function sendCounselingEmail(req) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -316,6 +354,17 @@ async function handleApi(request, response, url) {
 
   if (url.pathname === '/api/daily-verse' && request.method === 'GET') {
     sendJson(response, 200, getRandomCuratedVerse());
+    return;
+  }
+
+  if (url.pathname === '/api/bible/passage' && request.method === 'GET') {
+    try {
+      const reference = url.searchParams.get('reference') || '';
+      const translation = url.searchParams.get('translation') || 'kjv';
+      sendJson(response, 200, await fetchBiblePassage(reference, translation));
+    } catch (error) {
+      sendJson(response, 502, { error: error.message });
+    }
     return;
   }
 

@@ -41,25 +41,33 @@
       </article>
     </section>
 
-    <!-- Bible Reader App -->
-    <section class="bible-hero">
-      <article class="hero-card">
-        <h1>Read & Study Scripture</h1>
-        <p>Search the King James Version Bible by testament, book, chapter, and verse. Save favorites and add personal notes.</p>
-      </article>
-    </section>
+    <section class="bible-app-shell">
+      <div class="bible-app-heading">
+        <div>
+          <p class="dashboard-kicker">In-built Bible app</p>
+          <h2>Read and study Scripture</h2>
+          <p>Search by reference, browse from Genesis to Revelation, save favorites, add notes, and highlight verses.</p>
+        </div>
+      </div>
 
-    <!-- Segmented Bible Search -->
-    <section class="bible-search-section">
-      <div class="search-controls">
+      <div class="bible-search-card">
+        <div class="reference-search">
+          <label for="reference-search"><i class="fa-solid fa-magnifying-glass"></i> Search reference</label>
+          <div class="reference-search-row">
+            <input id="reference-search" type="search" placeholder="Try John 3:16, Psalms 23, Romans 8..." autocomplete="off">
+            <button id="search-reference-btn" class="button" type="button">Search</button>
+          </div>
+          <div class="reference-suggestions" id="reference-suggestions"></div>
+        </div>
+
+        <div class="search-controls">
         <!-- Version Selector -->
         <div class="control-segment">
           <label for="version-select"><i class="fa-solid fa-book"></i> Version</label>
           <select id="version-select">
             <option value="kjv">King James Version</option>
-            <option value="nkjv">New King James Version</option>
-            <option value="asv">American Standard</option>
             <option value="web">World English Bible</option>
+            <option value="asv">American Standard</option>
             <option value="ylt">Young's Literal</option>
           </select>
         </div>
@@ -98,6 +106,7 @@
         <button id="load-verse-btn" class="load-btn" disabled title="Load this verse">
           <i class="fa-solid fa-arrow-right"></i>
         </button>
+      </div>
       </div>
     </section>
 
@@ -157,6 +166,9 @@
         <button class="library-tab" data-tab="notes">
           <i class="fa-solid fa-note-sticky"></i> My Notes
         </button>
+        <button class="library-tab" data-tab="highlights">
+          <i class="fa-solid fa-highlighter"></i> Highlights
+        </button>
       </div>
 
       <div id="favorites" class="library-panel active">
@@ -164,6 +176,9 @@
       </div>
       <div id="notes" class="library-panel">
         <div id="notes-list" class="verses-grid"></div>
+      </div>
+      <div id="highlights" class="library-panel">
+        <div id="highlights-list" class="verses-grid"></div>
       </div>
     </section>
 
