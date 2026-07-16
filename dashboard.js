@@ -11,11 +11,43 @@ const readingPlan = [
   { id: 'day-7', label: 'Day 7', passage: 'Hebrews 11', focus: 'Faith that endures' }
 ];
 
-const devotionals = [
-  'Read slowly today. Ask God to show you one truth to practice before the day ends.',
-  'Pause after your reading and write one sentence about what obedience looks like today.',
-  'Choose one verse from your reading and turn it into a short prayer.',
-  'Encourage someone with one line from Scripture today.'
+const devotionalSeeds = [
+  {
+    devotional_date: '2026-07-16',
+    title: 'Strength for Today',
+    memory_reference: 'Philippians 4:13',
+    memory_verse: 'I can do all things through Christ which strengtheneth me.',
+    message: 'Spiritual growth is not built only in big moments. It is built when you choose faithfulness today. Let Christ be your strength for the next obedient step.',
+    prayer_point: 'Lord Jesus, strengthen my heart to obey You today and to keep growing with consistency.',
+    source: 'Word of Life'
+  },
+  {
+    devotional_date: '2026-07-17',
+    title: 'Led by the Word',
+    memory_reference: 'Psalm 119:105',
+    memory_verse: 'Thy word is a lamp unto my feet, and a light unto my path.',
+    message: 'God does not leave His children to walk in darkness. His Word gives direction for the step in front of you and wisdom for the road ahead.',
+    prayer_point: 'Father, open my understanding and guide my decisions through Your Word.',
+    source: 'Word of Life'
+  },
+  {
+    devotional_date: '2026-07-18',
+    title: 'First Things First',
+    memory_reference: 'Matthew 6:33',
+    memory_verse: 'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.',
+    message: 'A life of peace begins with ordered affection. When God comes first, every other pursuit finds its proper place under His rule.',
+    prayer_point: 'Lord, help me seek Your kingdom first in my choices, thoughts, and plans.',
+    source: 'Word of Life'
+  },
+  {
+    devotional_date: '2026-07-19',
+    title: 'Faith That Moves',
+    memory_reference: '2 Corinthians 5:7',
+    memory_verse: 'For we walk by faith, not by sight.',
+    message: 'Faith is not denial of reality. Faith is confidence that God is more real than what your eyes can measure. Take the step He is asking of you.',
+    prayer_point: 'Father, teach me to walk by faith and not be ruled by fear.',
+    source: 'Word of Life'
+  }
 ];
 
 const quiz = {
@@ -41,6 +73,7 @@ let supabaseClient = null;
 let currentUser = null;
 let currentProfile = null;
 let currentProgress = { ...defaultProgress };
+let todayDevotional = null;
 let prayerEntries = [];
 let pendingAuthAction = 'signup';
 
@@ -53,6 +86,11 @@ const dashboardSubtitle = document.getElementById('dashboard-subtitle');
 const profileName = document.getElementById('profile-name');
 const profileFocus = document.getElementById('profile-focus');
 const readingList = document.getElementById('reading-list');
+const devotionalTitle = document.getElementById('devotional-title');
+const devotionalDate = document.getElementById('devotional-date');
+const devotionalReference = document.getElementById('devotional-reference');
+const devotionalMemoryVerse = document.getElementById('devotional-memory-verse');
+const devotionalPrayer = document.getElementById('devotional-prayer');
 const dailyDevotional = document.getElementById('daily-devotional');
 const devotionalStatus = document.getElementById('devotional-status');
 const completeDevotional = document.getElementById('complete-devotional');
@@ -115,9 +153,39 @@ function toProgressRow(progress) {
   };
 }
 
-function getTodayDevotional() {
-  const seed = todayKey().split('').reduce((total, char) => total + char.charCodeAt(0), 0);
-  return devotionals[seed % devotionals.length];
+function getSeedDevotional(date = todayKey()) {
+  const exact = devotionalSeeds.find(item => item.devotional_date === date);
+  if (exact) return exact;
+
+  const seed = date.split('').reduce((total, char) => total + char.charCodeAt(0), 0);
+  return {
+    ...devotionalSeeds[seed % devotionalSeeds.length],
+    devotional_date: date
+  };
+}
+
+function devotionalCompletionKey(devotional = todayDevotional) {
+  return devotional?.devotional_date || todayKey();
+}
+
+async function loadTodayDevotional() {
+  todayDevotional = getSeedDevotional();
+
+  if (!supabaseClient || !currentUser) return todayDevotional;
+
+  const { data, error } = await supabaseClient
+    .from('devotionals')
+    .select('id, devotional_date, title, memory_reference, memory_verse, message, prayer_point, source')
+    .lte('devotional_date', todayKey())
+    .order('devotional_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!error && data) {
+    todayDevotional = data;
+  }
+
+  return todayDevotional;
 }
 
 function calculateStreak(progress) {
@@ -169,6 +237,8 @@ async function initSupabase() {
 }
 
 async function loadDashboardData() {
+  await loadTodayDevotional();
+
   const { data: profile, error: profileError } = await supabaseClient
     .from('profiles')
     .select('*')
@@ -346,8 +416,19 @@ function renderReadingPlan(progress) {
 }
 
 function renderDevotional(progress) {
-  const doneToday = (progress.devotionalDates || []).includes(todayKey());
-  dailyDevotional.innerText = getTodayDevotional();
+  const devotional = todayDevotional || getSeedDevotional();
+  const doneToday = (progress.devotionalDates || []).includes(devotionalCompletionKey(devotional));
+  devotionalTitle.innerText = devotional.title || 'Daily devotion';
+  devotionalDate.innerText = new Date(`${devotional.devotional_date}T00:00:00`).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  devotionalReference.innerText = devotional.memory_reference || '';
+  devotionalMemoryVerse.innerText = devotional.memory_verse || '';
+  dailyDevotional.innerText = devotional.message || '';
+  devotionalPrayer.innerText = devotional.prayer_point || '';
   devotionalStatus.innerText = doneToday ? 'Completed' : 'Pending';
   devotionalStatus.classList.toggle('done', doneToday);
   completeDevotional.disabled = doneToday;
@@ -496,13 +577,13 @@ if (profileForm) {
 
 if (completeDevotional) {
   completeDevotional.addEventListener('click', async () => {
-    const key = todayKey();
+    const key = devotionalCompletionKey();
     if (!currentProgress.devotionalDates.includes(key)) {
       await saveProgress({
         ...currentProgress,
         devotionalDates: [...currentProgress.devotionalDates, key]
       });
-      await addActivity('Completed today\'s devotional');
+      await addActivity(`Completed devotional: ${todayDevotional?.title || 'Daily devotion'}`);
     }
     renderDashboard();
   });

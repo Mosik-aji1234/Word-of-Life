@@ -138,11 +138,23 @@
           <div class="card-heading">
             <div>
               <p class="dashboard-kicker">Today</p>
-              <h3>Daily devotion</h3>
+              <h3 id="devotional-title">Daily devotion</h3>
             </div>
             <span class="status-pill" id="devotional-status">Pending</span>
           </div>
-          <p id="daily-devotional" class="dashboard-copy"></p>
+          <div class="devotional-card-body">
+            <p class="devotional-date" id="devotional-date"></p>
+            <div class="memory-verse">
+              <span>Memory verse</span>
+              <strong id="devotional-reference"></strong>
+              <p id="devotional-memory-verse"></p>
+            </div>
+            <p id="daily-devotional" class="dashboard-copy"></p>
+            <div class="prayer-point">
+              <span>Prayer point</span>
+              <p id="devotional-prayer"></p>
+            </div>
+          </div>
           <button class="button" id="complete-devotional" type="button">Mark as completed</button>
         </article>
 
